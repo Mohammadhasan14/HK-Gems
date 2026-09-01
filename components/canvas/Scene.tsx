@@ -13,12 +13,18 @@ export function Scene() {
   return (
     <>
       <CameraRig />
-      <ambientLight intensity={0.15} />
+      {/* R3F uses physically-correct (candela) light units, not the old
+          "intensity 1 = fully lit" scale — these values look plausible in
+          the editor but read as near-black once tone mapping compresses
+          them at these distances. Bumped so the Phase 0 placeholder is
+          actually visible; Phase 1 replaces this with a proper HDRI
+          <Environment> + tuned key light once there's a real material to light. */}
+      <ambientLight intensity={0.6} />
       <spotLight
         position={[4, 6, 5]}
         angle={0.35}
         penumbra={0.6}
-        intensity={60}
+        intensity={300}
         castShadow
       />
       <HeroStone />

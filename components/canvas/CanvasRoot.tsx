@@ -18,8 +18,13 @@ import { Scene } from "./Scene";
  * avoided instead of just hoping the camera never gets close.
  */
 export function CanvasRoot() {
+  // z-0 (not a negative z-index): `body` in app/layout.tsx has its own
+  // opaque background and no stacking context of its own, so a negative
+  // z-index here would paint *behind* that background and never be visible
+  // — a classic CSS trap. z-0 plus DOM order (this mounts before the DOM
+  // text layer in SiteShell) is what actually keeps it behind the text.
   return (
-    <div className="fixed inset-0 -z-10" aria-hidden="true">
+    <div className="fixed inset-0 z-0" aria-hidden="true">
       <Canvas
         gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
         dpr={[1, 2]}
