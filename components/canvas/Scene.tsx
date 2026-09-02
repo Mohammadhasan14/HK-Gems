@@ -2,6 +2,8 @@
 
 import { CameraRig } from "./CameraRig";
 import { HeroStone } from "./HeroStone";
+import { LightPoint } from "./LightPoint";
+import { KEY_LIGHT_POSITION } from "@/lib/sceneConstants";
 
 /**
  * Phase 0: camera rig + one lit placeholder stone. Environment lighting,
@@ -21,13 +23,14 @@ export function Scene() {
           <Environment> + tuned key light once there's a real material to light. */}
       <ambientLight intensity={0.6} />
       <spotLight
-        position={[4, 6, 5]}
+        position={KEY_LIGHT_POSITION}
         angle={0.35}
         penumbra={0.6}
         intensity={300}
         castShadow
       />
       <HeroStone />
+      <LightPoint />
     </>
   );
 }

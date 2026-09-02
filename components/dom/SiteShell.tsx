@@ -6,6 +6,7 @@ import { DevHud } from "@/components/hud/DevHud";
 import { ScrollProvider } from "./ScrollProvider";
 import { QualityController } from "./QualityController";
 import { Header } from "./Header";
+import { Loader } from "./Loader";
 
 /**
  * Mounted once at the layout level (app/layout.tsx). Owns the persistent
@@ -20,6 +21,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <QualityController />
       <Header />
       <main className="relative z-0">{children}</main>
+      <Loader />
       <DevHud />
     </ScrollProvider>
   );

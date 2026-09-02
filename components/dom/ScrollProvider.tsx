@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
-import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useScroll } from "@/store/useScroll";
+import { getLenis, destroyLenis } from "@/lib/lenisBridge";
 
 if (typeof window !== "undefined") {
   gsap.registerPlugin(ScrollTrigger);
@@ -21,18 +21,27 @@ if (typeof window !== "undefined") {
  * Every ScrollTrigger created elsewhere in the app should run with
  * `scrub: 1` (or similar) to match this lag, per the brief: "Scroll is the
  * only clock. Nothing on a timer."
+ *
+ * Lenis itself is created lazily via lib/lenisBridge.ts's getLenis(), not
+ * here directly — components/dom/Loader.tsx (a child of this component)
+ * may need to stop scroll before this effect has even run, since child
+ * effects fire before parent effects on mount. getLenis() lets whichever of
+ * the two runs first do the actual construction.
  */
 export function ScrollProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t: number) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      smoothWheel: true,
-    });
+    const lenis = getLenis();
 
-    lenis.on("scroll", ({ progress, velocity }: { progress: number; velocity: number }) => {
+    const onScroll = ({
+      progress,
+      velocity,
+    }: {
+      progress: number;
+      velocity: number;
+    }) => {
       useScroll.getState().setScroll(progress, velocity);
-    });
+    };
+    lenis.on("scroll", onScroll);
     lenis.on("scroll", ScrollTrigger.update);
 
     // Drive Lenis from gsap.ticker (rather than its own rAF loop) so scroll
@@ -43,7 +52,7 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
 
     return () => {
       gsap.ticker.remove(update);
-      lenis.destroy();
+      destroyLenis();
     };
   }, []);
 

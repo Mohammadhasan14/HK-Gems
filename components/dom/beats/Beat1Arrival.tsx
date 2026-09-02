@@ -1,9 +1,9 @@
 import { BeatSection } from "../BeatSection";
 
 /**
- * Beat 1 — Arrival. Phase 0: static real copy only. Phase 1 adds the
- * loader (wordmark tracking 0 -> 0.3em as a counter runs to 100, digits
- * collapsing into the stone's specular highlight) ahead of this headline.
+ * Beat 1 — Arrival. The loader (components/dom/Loader.tsx) plays once on
+ * mount, ahead of this headline; this content is what's underneath it the
+ * whole time and what remains once it hands off.
  */
 export function Beat1Arrival() {
   return (
