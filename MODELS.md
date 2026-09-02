@@ -9,14 +9,14 @@ code comments should point back to this file instead.
 
 | Asset | Beat(s) | Placeholder | Spec below |
 | --- | --- | --- | --- |
-| Hero stone — Durr-e-Najaf | 3, 5 | procedural sphere | [yes](#hero-stone--durr-e-najaf) |
+| Hero stone — Durr-e-Najaf | 3, 5 | faceted icosahedron, real transmission material | [yes](#hero-stone--durr-e-najaf) |
 
 ---
 
 ## Hero stone — Durr-e-Najaf
 
 - **File**: `components/canvas/HeroStone.tsx`
-- **Current placeholder**: procedural sphere (`sphereGeometry`, radius 1, plain `meshStandardMaterial`)
+- **Current placeholder**: `icosahedronGeometry(1, 0)` (the 20-face icosahedron — a properly faceted convex hull) with `flatShading`; `MeshTransmissionMaterial` on HIGH tier, native `meshPhysicalMaterial` transmission on LOW/STATIC (see Material target below — this placeholder already uses the Phase 1 target material, just on stand-in geometry)
 - **Delivery format**: a sequence of pre-authored "cut stage" `BufferGeometry`s, NOT runtime CSG — CSG can't be scrubbed against scroll position. Phase 2 generates a placeholder sequence procedurally (slicing a convex hull with planes at build time); the real geometry should match its stage count so the scrub choreography doesn't need to change when it's swapped in.
 - **Stage count**: 5 — rough hull → table facet → crown facets → pavilion facets → final polish.
 - **Pivot origin**: geometric centre `(0, 0, 0)` in local space, so it can rotate/orbit in place across Beats 3–5 without a re-parent.

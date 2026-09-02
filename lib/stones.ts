@@ -2,8 +2,10 @@
  * Stone catalogue — one config object per gemstone. The hero stone is
  * swappable via the single HERO_STONE_ID value below, per the brief.
  *
- * Material fields here are targets for Phase 1 (materials pass), not yet
- * wired into geometry — see components/canvas/HeroStone.tsx.
+ * Material fields here are wired into geometry for the hero stone as of
+ * Phase 1 (materials pass) — see components/canvas/HeroStone.tsx. The other
+ * five stones don't have placeholders yet; their fields stay unused targets
+ * until Phase 3.
  */
 
 export type StoneId =
