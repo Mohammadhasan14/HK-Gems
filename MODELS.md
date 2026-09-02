@@ -9,15 +9,15 @@ code comments should point back to this file instead.
 
 | Asset | Beat(s) | Placeholder | Spec below |
 | --- | --- | --- | --- |
-| Hero stone — Durr-e-Najaf | 3, 5 | faceted icosahedron, real transmission material | [yes](#hero-stone--durr-e-najaf) |
+| Hero stone — Durr-e-Najaf | 3, 5 | 5-stage procedural cut sequence, real transmission material | [yes](#hero-stone--durr-e-najaf) |
 
 ---
 
 ## Hero stone — Durr-e-Najaf
 
-- **File**: `components/canvas/HeroStone.tsx`
-- **Current placeholder**: `icosahedronGeometry(1, 0)` (the 20-face icosahedron — a properly faceted convex hull) with `flatShading`; `MeshTransmissionMaterial` on HIGH tier, native `meshPhysicalMaterial` transmission on LOW/STATIC (see Material target below — this placeholder already uses the Phase 1 target material, just on stand-in geometry)
-- **Delivery format**: a sequence of pre-authored "cut stage" `BufferGeometry`s, NOT runtime CSG — CSG can't be scrubbed against scroll position. Phase 2 generates a placeholder sequence procedurally (slicing a convex hull with planes at build time); the real geometry should match its stage count so the scrub choreography doesn't need to change when it's swapped in.
+- **File**: `components/canvas/HeroStone.tsx`, cut-stage generation in `lib/cutStages.ts`
+- **Current placeholder**: 5 `BufferGeometry`s generated at module load by slicing a unit icosahedron with planes (`lib/cutStages.ts`) — swapped by reference in `HeroStone.tsx` based on scroll position within the Cut beat, not regenerated per frame. `flatShading` throughout; `MeshTransmissionMaterial` on HIGH tier, native `meshPhysicalMaterial` transmission on LOW/STATIC (see Material target below — this placeholder already uses the Phase 1 target material)
+- **Delivery format**: a sequence of pre-authored "cut stage" `BufferGeometry`s, NOT runtime CSG — CSG can't be scrubbed against scroll position. The real modeller-authored geometry should match this stage count (5) so the existing scroll-driven swap in `HeroStone.tsx` doesn't need to change when it's swapped in — just the `CUT_STAGES` array's source.
 - **Stage count**: 5 — rough hull → table facet → crown facets → pavilion facets → final polish.
 - **Pivot origin**: geometric centre `(0, 0, 0)` in local space, so it can rotate/orbit in place across Beats 3–5 without a re-parent.
 - **Poly count target**: ~2–4k tris per stage, welded normals, no coplanar micro-facets (they read as noise under transmission).

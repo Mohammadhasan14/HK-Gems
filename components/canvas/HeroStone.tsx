@@ -2,13 +2,17 @@
 
 import { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { MeshTransmissionMaterial } from "@react-three/drei";
 import { useScroll } from "@/store/useScroll";
 import { HERO_STONE } from "@/lib/stones";
 import { BEATS } from "@/lib/beats";
+import { CUT_STAGES, CUT_STAGE_COUNT } from "@/lib/cutStages";
+import { hud } from "@/lib/hud";
 
 const IOR = HERO_STONE.ior ?? 1.5;
 const INHALE = BEATS.find((b) => b.id === "inhale")!;
+const CUT = BEATS.find((b) => b.id === "cut")!;
 
 // Rough/unpolished read for Arrival through Origin and most of Inhale — the
 // stone hasn't been "cut" yet. Final values match the two material
@@ -17,9 +21,16 @@ const ROUGH_UNCUT = 0.9;
 const ROUGH_POLISHED_HIGH = 0.02;
 const ROUGH_POLISHED_LOW = 0.08;
 
+// Camera curve waypoint 5 (lib/curve.ts) sits at radius ~0.16 from centre —
+// well inside the unit hull — so a small margin above the hero stone's own
+// radius (1) is enough to catch "inside" without false-triggering from
+// ordinary orbiting distances elsewhere on the curve.
+const HERO_RADIUS = 1;
+
 /**
- * TODO(modeller): Phase 1 placeholder. This faceted icosahedron stands in
- * for HERO_STONE (lib/stones.ts) until the real cut-stage geometry lands.
+ * TODO(modeller): Phase 1/2 placeholder. This procedurally-cut icosahedron
+ * (lib/cutStages.ts) stands in for HERO_STONE (lib/stones.ts) until the real
+ * modeller-authored cut-stage geometry lands.
  *
  * Full model spec (stage count, pivot, poly budget, UV requirement,
  * material target) lives in /MODELS.md — that file is the single source of
@@ -29,14 +40,33 @@ const ROUGH_POLISHED_LOW = 0.08;
 export function HeroStone() {
   const quality = useScroll((s) => s.quality);
   const highTier = quality === "high";
-  // roughness accepts a number on both material branches below (drei's
-  // MeshTransmissionMaterial and native meshPhysicalMaterial) — typed loosely
-  // here since the ref's concrete type differs per branch.
-  const materialRef = useRef<{ roughness: number } | null>(null);
+  const meshRef = useRef<THREE.Mesh>(null);
+  // roughness/side accept the same shape on both material branches below
+  // (drei's MeshTransmissionMaterial and native meshPhysicalMaterial) —
+  // typed loosely here since the ref's concrete class differs per branch.
+  const materialRef = useRef<{ roughness: number; side: THREE.Side } | null>(null);
+  const stageRef = useRef(0);
 
   useFrame(() => {
-    if (!materialRef.current) return;
     const { progress } = useScroll.getState();
+
+    // Cut-stage swap: which of the 5 precomputed geometries is showing,
+    // discretized by scroll position within the Cut beat only. MODELS.md's
+    // "not runtime CSG" delivery format — this is a reference swap between
+    // geometries that already exist, not a live boolean op.
+    let stage = 0;
+    if (progress >= CUT.end) stage = CUT_STAGE_COUNT - 1;
+    else if (progress > CUT.start) {
+      const local = (progress - CUT.start) / (CUT.end - CUT.start);
+      stage = Math.min(CUT_STAGE_COUNT - 1, Math.floor(local * CUT_STAGE_COUNT));
+    }
+    if (stage !== stageRef.current && meshRef.current) {
+      meshRef.current.geometry = CUT_STAGES[stage];
+      stageRef.current = stage;
+    }
+
+    if (!materialRef.current) return;
+
     // A SNAP, not a lerp — "roughness snaps 0.9 -> 0.02 the instant the last
     // mote passes the hull" (see components/canvas/DustField.tsx, which
     // reaches the hull at exactly INHALE.end too, so the two are locked to
@@ -47,16 +77,29 @@ export function HeroStone() {
         ? ROUGH_POLISHED_HIGH
         : ROUGH_POLISHED_LOW
       : ROUGH_UNCUT;
+
+    // Inside-hull material swap (CanvasRoot.tsx's "planned Phase 2" note):
+    // once the camera (lib/curve.ts waypoint 5) is actually inside the
+    // stone's bounding radius, default front-face culling shows literally
+    // nothing — every visible triangle now has its normal pointing away
+    // from the camera. Flip to back faces so the inside of the facets is
+    // what's rendered instead of a black void.
+    const camDist = Math.hypot(
+      hud.cameraPosition.x,
+      hud.cameraPosition.y,
+      hud.cameraPosition.z,
+    );
+    materialRef.current.side = camDist < HERO_RADIUS ? THREE.BackSide : THREE.FrontSide;
   });
 
   return (
-    <mesh position={[0, 0, 0]} castShadow receiveShadow>
-      {/* detail 0 = the classic 20-face icosahedron — a properly faceted
-          convex hull, per the brief's own acceptable-placeholder bar, not a
-          smooth default-material ball. flatShading (on both material
-          branches below) is what actually makes the facets read as cut
-          rather than tessellated-but-smooth. */}
-      <icosahedronGeometry args={[1, 0]} />
+    <mesh
+      ref={meshRef}
+      position={[0, 0, 0]}
+      geometry={CUT_STAGES[0]}
+      castShadow
+      receiveShadow
+    >
       {highTier ? (
         // HIGH: drei's MeshTransmissionMaterial — a real backbuffer re-render
         // each frame, so refraction/chromatic aberration/distortion are

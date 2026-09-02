@@ -2,9 +2,10 @@ import { BeatSection } from "../BeatSection";
 
 /**
  * Beat 3 — The Cut, the signature moment. Phase 2 adds the cut-stage
- * geometry swap, the sweeping black plane, and the inside-the-hull camera
- * solution; this headline is the one refraction throws moving colour onto
- * from inside the gem once that's built.
+ * geometry swap (lib/cutStages.ts) and the inside-the-hull camera solution
+ * (components/canvas/HeroStone.tsx's BackSide flip) — both live. The
+ * sweeping black plane is still outstanding; this headline is the one
+ * refraction throws moving colour onto from inside the gem once that lands.
  */
 export function Beat3Cut() {
   return (

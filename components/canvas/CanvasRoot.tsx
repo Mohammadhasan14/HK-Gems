@@ -14,8 +14,10 @@ import { Scene } from "./Scene";
  * stone's hull on purpose (see lib/curve.ts waypoint 5), and the previous
  * attempt at this site clipped the mesh through the near plane at the end
  * of the page (failure mode #4 in the brief). A small near plane plus the
- * dedicated inside-hull material swap planned for Phase 2 is how that's
- * avoided instead of just hoping the camera never gets close.
+ * inside-hull material swap (components/canvas/HeroStone.tsx flips to
+ * BackSide once the camera's actual distance from the stone drops below its
+ * radius) is how that's avoided instead of just hoping the camera never
+ * gets close.
  */
 export function CanvasRoot() {
   // z-0 (not a negative z-index): `body` in app/layout.tsx has its own

@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { useScroll } from "@/store/useScroll";
-import { cameraPositionCurve, cameraTargetCurve } from "@/lib/curve";
+import { cameraPositionCurve, cameraTargetCurve, warpProgress } from "@/lib/curve";
 import { hud } from "@/lib/hud";
 
 // Scratch vectors reused every frame — avoid allocating inside useFrame.
@@ -32,7 +32,11 @@ export function CameraRig() {
     smoothedProgress.current +=
       (progress - smoothedProgress.current) * Math.min(1, delta * 4);
 
-    const t = THREE.MathUtils.clamp(smoothedProgress.current, 0, 1);
+    const rawT = THREE.MathUtils.clamp(smoothedProgress.current, 0, 1);
+    // See lib/curve.ts's pacing note: this is what actually produces the
+    // Cut beat's "hold, then push into the hull" read — waypoint spacing
+    // alone can't, since getPointAt is uniform-arclength everywhere.
+    const t = warpProgress(rawT);
 
     cameraPositionCurve.getPointAt(t, _pos);
     cameraTargetCurve.getPointAt(t, _target);
