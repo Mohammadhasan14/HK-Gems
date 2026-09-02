@@ -1,10 +1,13 @@
 /**
- * Non-reactive side channel for high-frequency dev-HUD values (camera
- * position, FPS, the quality probe's result). These are written every frame
- * by CameraRig and QualityController; routing them through the Zustand
- * scroll store would re-render every store subscriber at 60fps for no
- * reason, since only the hidden-by-default DevHud ever reads them, and only
- * while visible.
+ * Non-reactive side channel for high-frequency values (camera position, FPS,
+ * the quality probe's result), written every frame by CameraRig and
+ * QualityController. Routing them through the Zustand scroll store would
+ * re-render every store subscriber at 60fps for no reason.
+ *
+ * `cameraPosition` started as a dev-HUD-only value but is now also read by
+ * components/canvas/Strata.tsx, which needs the camera's exact live Y each
+ * frame to decide which band is "nearby" right now — a second production
+ * consumer, not just the hidden-by-default DevHud.
  */
 export const hud = {
   cameraPosition: { x: 0, y: 0, z: 0 },

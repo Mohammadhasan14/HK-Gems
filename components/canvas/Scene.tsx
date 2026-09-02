@@ -4,6 +4,8 @@ import { Environment, ContactShadows } from "@react-three/drei";
 import { CameraRig } from "./CameraRig";
 import { HeroStone } from "./HeroStone";
 import { LightPoint } from "./LightPoint";
+import { Strata } from "./Strata";
+import { DustField } from "./DustField";
 import { KEY_LIGHT_POSITION } from "@/lib/sceneConstants";
 import { useScroll } from "@/store/useScroll";
 
@@ -46,7 +48,9 @@ export function Scene() {
         environmentIntensity={0.7}
         resolution={highTier ? 256 : 32}
       />
+      <Strata />
       <HeroStone />
+      <DustField />
       <LightPoint />
       {highTier && (
         <ContactShadows
