@@ -8,10 +8,10 @@ import { BeatSection } from "../BeatSection";
 export function Beat1Arrival() {
   return (
     <BeatSection id="arrival" className="items-start">
-      <p className="font-sans text-[10px] uppercase tracking-[0.3em] text-white/50">
+      <p className="font-sans text-xs font-medium uppercase tracking-[0.4em] text-white/50">
         HK Gems — Stones of Origin
       </p>
-      <h1 className="mt-6 max-w-xl font-display text-4xl font-light leading-tight text-white sm:text-6xl">
+      <h1 className="mt-8 max-w-3xl font-display text-6xl font-light leading-[1.05] text-white sm:text-7xl lg:text-8xl">
         A stone <em className="italic text-[#C9A227]">carries</em> its
         mountain.
       </h1>

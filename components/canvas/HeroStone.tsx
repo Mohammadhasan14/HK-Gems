@@ -15,8 +15,19 @@ const _anchorWorld = new THREE.Vector3();
 const _anchorNdc = new THREE.Vector3();
 
 const IOR = HERO_STONE.ior ?? 1.5;
+const ARRIVAL = BEATS.find((b) => b.id === "arrival")!;
 const INHALE = BEATS.find((b) => b.id === "inhale")!;
 const CUT = BEATS.find((b) => b.id === "cut")!;
+
+// Hero composition intro (Beats 1-2 only, per this iteration's brief): the
+// stone materializes from a slightly smaller presentation up to its true
+// scale across Arrival, then holds at 1 — by Origin's end this is already
+// settled, so it never touches Cut onward. A gentle yaw swings out and
+// fully back to 0 by CUT.start (sin(pi) = 0 exactly), so beats 3-7 render
+// with rotation.y pinned at 0 exactly as before this change — nothing here
+// leaks a residual transform past the Cut boundary.
+const INTRO_SCALE_FROM = 0.85;
+const YAW_SWING = 0.32;
 
 // Rough/unpolished read for Arrival through Origin and most of Inhale — the
 // stone hasn't been "cut" yet. Final values match the two material
@@ -68,6 +79,15 @@ export function HeroStone() {
     if (stage !== stageRef.current && meshRef.current) {
       meshRef.current.geometry = CUT_STAGES[stage];
       stageRef.current = stage;
+    }
+
+    if (meshRef.current) {
+      const introT = THREE.MathUtils.smoothstep(progress, 0, ARRIVAL.end);
+      meshRef.current.scale.setScalar(
+        THREE.MathUtils.lerp(INTRO_SCALE_FROM, 1, introT),
+      );
+      const spinPhase = Math.min(progress, CUT.start) / CUT.start;
+      meshRef.current.rotation.y = Math.sin(spinPhase * Math.PI) * YAW_SWING;
     }
 
     // Project the final-stage facet anchor to screen space every frame,
@@ -126,15 +146,19 @@ export function HeroStone() {
           ref={materialRef}
           flatShading
           transmission={1}
-          thickness={2}
+          thickness={2.2}
           ior={IOR}
           roughness={ROUGH_UNCUT}
-          chromaticAberration={0.06}
-          anisotropy={0.2}
-          samples={6}
-          resolution={512}
+          chromaticAberration={0.04}
+          anisotropy={0.1}
+          samples={16}
+          resolution={1024}
           color={HERO_STONE.color}
-          envMapIntensity={1}
+          attenuationColor="#fff3da"
+          attenuationDistance={1.1}
+          clearcoat={1}
+          clearcoatRoughness={0.12}
+          envMapIntensity={1.35}
         />
       ) : (
         // LOW/STATIC: native MeshPhysicalMaterial.transmission is a
@@ -151,6 +175,9 @@ export function HeroStone() {
           ior={IOR}
           roughness={ROUGH_UNCUT}
           color={HERO_STONE.color}
+          clearcoat={1}
+          clearcoatRoughness={0.2}
+          envMapIntensity={1.2}
         />
       )}
     </mesh>

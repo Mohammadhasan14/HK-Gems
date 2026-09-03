@@ -51,10 +51,10 @@ export function Beat2Origin() {
 
   return (
     <BeatSection id="origin">
-      <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/40">
+      <p className="font-sans text-xs font-medium uppercase tracking-[0.3em] text-white/40">
         Origin
       </p>
-      <div className="mt-6 space-y-3 font-display text-3xl font-light text-white sm:text-5xl">
+      <div className="mt-8 space-y-4 font-display text-4xl font-light text-white sm:text-6xl lg:text-7xl">
         {LINES.map(({ prefix, word }, i) => (
           <div key={word} className="overflow-hidden">
             <p

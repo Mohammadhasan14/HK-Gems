@@ -37,7 +37,7 @@ export function Scene() {
           "intensity 1 = fully lit" scale — these values look plausible in
           the editor but read as near-black once tone mapping compresses
           them at these distances. */}
-      <ambientLight intensity={0.6} />
+      <ambientLight intensity={0.4} />
       <spotLight
         position={KEY_LIGHT_POSITION}
         angle={0.35}
@@ -45,6 +45,13 @@ export function Scene() {
         intensity={300}
         castShadow
       />
+      {/* Warm gold rim/kicker light, behind and opposite the key — separates
+          the stone's silhouette and facet edges from the near-black
+          background instead of relying on flat ambient fill alone, and ties
+          the highlight into the brand's own gold accent rather than a
+          generic cool "product render" kicker. Deliberately dim relative to
+          the key so it reads as edge definition, not a second key light. */}
+      <pointLight position={[-3.0, 1.0, -3.2]} intensity={42} color="#d9b877" />
       <Environment
         preset="studio"
         environmentIntensity={0.7}
@@ -58,11 +65,11 @@ export function Scene() {
       <LightPoint />
       {highTier && (
         <ContactShadows
-          position={[0, -1.05, 0]}
-          opacity={0.45}
+          position={[0, -1.5, 0]}
+          opacity={0.25}
           blur={2.4}
-          far={3}
-          scale={6}
+          far={1.1}
+          scale={1.6}
         />
       )}
     </>

@@ -38,8 +38,8 @@ import { BEATS } from "./beats";
 
 // prettier-ignore
 const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
-  new THREE.Vector3(0.0,  1.2, 9.0),   // 0  arrival start — wide, elevated establishing shot
-  new THREE.Vector3(0.6,  0.4, 5.5),   // 1  arrival end / origin start — stone off-centre, high key
+  new THREE.Vector3(0.3, 0.85, 5.6),   // 0  arrival start — close, elevated establishing shot
+  new THREE.Vector3(0.9, 0.15, 3.6),   // 1  arrival end / origin start — closer, intimate, off-centre
   new THREE.Vector3(-0.8, -0.6, 3.8),  // 2  origin end / inhale start — descended past strata
   new THREE.Vector3(0.0, -0.1, 2.4),   // 3  inhale end / cut start — dust converges, camera re-centres
   new THREE.Vector3(0.0,  0.0, 1.6),   // 4  cut hold — camera dead-still while facets are cut (Phase 2 densifies this)
@@ -53,9 +53,9 @@ const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
 
 // prettier-ignore
 const CAMERA_TARGET_WAYPOINTS: THREE.Vector3[] = [
-  new THREE.Vector3(-0.4, 0.1, 0),  // 0
-  new THREE.Vector3(-0.3, 0.0, 0),  // 1
-  new THREE.Vector3(-0.1, -0.1, 0), // 2
+  new THREE.Vector3(-0.65, 0.0, 0),   // 0
+  new THREE.Vector3(-0.5, -0.05, 0),  // 1
+  new THREE.Vector3(-0.1, -0.1, 0),   // 2
   new THREE.Vector3(0.0, 0.0, 0),   // 3
   new THREE.Vector3(0.0, 0.0, 0),   // 4
   new THREE.Vector3(0.0, 0.0, 0),   // 5
