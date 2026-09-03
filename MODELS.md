@@ -10,6 +10,8 @@ code comments should point back to this file instead.
 | Asset | Beat(s) | Placeholder | Spec below |
 | --- | --- | --- | --- |
 | Hero stone — Durr-e-Najaf | 3, 5 | 5-stage procedural cut sequence, real transmission material | [yes](#hero-stone--durr-e-najaf) |
+| Bezel/ring assembly | 4 | procedural ring + 4 prongs, unlit placeholder | [yes](#bezelring-assembly) |
+| Firoza, Aqeeq, Pukhraj, Zamurd, Yaqoot (satellite stones) | 7 | tinted icosahedra on the vitrine ring | [yes](#collection-satellite-stones) |
 
 ---
 
@@ -26,4 +28,19 @@ code comments should point back to this file instead.
 
 ---
 
-*(Ring / silver parts, and the other five stones — Firoza, Aqeeq, Pukhraj, Zamurd, Yaqoot — get entries here once their placeholders land, starting Phase 3.)*
+## Bezel/ring assembly
+
+- **File**: `components/canvas/BezelAssembly.tsx`
+- **Current placeholder**: a `torusGeometry` ring + 4 `coneGeometry` prongs, unlit `meshBasicMaterial`, procedurally positioned — not a modelled asset. Prongs fan out radially and the ring drops to explode; both draw back together as `lib/tolerance.ts`'s gap fraction closes.
+- **Delivery format**: real silver-part geometry can replace the whole component's render output directly — the explode/close driver (`toleranceGapFraction`) is already decoupled in `lib/tolerance.ts` and doesn't assume anything about part shape.
+- **Pivot origin**: each part's own local origin is already where it needs to be for its radial offset; a real model just needs a sane local origin at its own attachment point.
+- **Material target**: not yet specified — this stands in as an unlit metal-tone silhouette only, no lighting response.
+
+---
+
+## Collection satellite stones
+
+- **File**: `components/canvas/Vitrine.tsx`
+- **Current placeholder**: `icosahedronGeometry(0.32, 0)` per stone, `meshStandardMaterial` tinted to each stone's `color` field in `lib/stones.ts` — same placeholder shape as the hero stone's Phase 0 stand-in, just small and untransmissive (all five are secondary/background elements here, not the showcase piece).
+- **Delivery format**: one small showcase-quality model per stone eventually; `optics` in `lib/stones.ts` already records which should end up transmissive (Pukhraj, Zamurd, Yaqoot, plus the hero) vs. opaque (Firoza, Aqeeq) for whoever picks up the real materials pass.
+- **Pivot origin**: geometric centre, matching the hero stone's convention — the vitrine ring positions each by its mesh's own `position`, not a parent offset.

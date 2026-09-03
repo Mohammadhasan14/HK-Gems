@@ -1,14 +1,18 @@
 "use client";
 
 import { useRef } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { MeshTransmissionMaterial } from "@react-three/drei";
 import { useScroll } from "@/store/useScroll";
 import { HERO_STONE } from "@/lib/stones";
 import { BEATS } from "@/lib/beats";
-import { CUT_STAGES, CUT_STAGE_COUNT } from "@/lib/cutStages";
+import { CUT_STAGES, CUT_STAGE_COUNT, FACET_ANCHOR_LOCAL } from "@/lib/cutStages";
 import { hud } from "@/lib/hud";
+import { facetAnchor } from "@/lib/facetAnchor";
+
+const _anchorWorld = new THREE.Vector3();
+const _anchorNdc = new THREE.Vector3();
 
 const IOR = HERO_STONE.ior ?? 1.5;
 const INHALE = BEATS.find((b) => b.id === "inhale")!;
@@ -40,6 +44,7 @@ const HERO_RADIUS = 1;
 export function HeroStone() {
   const quality = useScroll((s) => s.quality);
   const highTier = quality === "high";
+  const { camera, size } = useThree();
   const meshRef = useRef<THREE.Mesh>(null);
   // roughness/side accept the same shape on both material branches below
   // (drei's MeshTransmissionMaterial and native meshPhysicalMaterial) —
@@ -63,6 +68,18 @@ export function HeroStone() {
     if (stage !== stageRef.current && meshRef.current) {
       meshRef.current.geometry = CUT_STAGES[stage];
       stageRef.current = stage;
+    }
+
+    // Project the final-stage facet anchor to screen space every frame,
+    // regardless of which stage is currently showing — Beat 5 (Object),
+    // the only reader, comes after Cut has finished at the final stage
+    // anyway. Same screen-projection technique as LightPoint.tsx.
+    if (meshRef.current) {
+      _anchorWorld.copy(FACET_ANCHOR_LOCAL).applyMatrix4(meshRef.current.matrixWorld);
+      _anchorNdc.copy(_anchorWorld).project(camera);
+      facetAnchor.screenX = (_anchorNdc.x * 0.5 + 0.5) * size.width;
+      facetAnchor.screenY = (-_anchorNdc.y * 0.5 + 0.5) * size.height;
+      facetAnchor.ready = true;
     }
 
     if (!materialRef.current) return;

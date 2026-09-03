@@ -180,3 +180,22 @@ function buildStages(): THREE.BufferGeometry[] {
 
 export const CUT_STAGES = buildStages();
 export const CUT_STAGE_COUNT = CUT_STAGES.length;
+
+/**
+ * A stable "facet edge" point on the final (most-cut) stage — its topmost
+ * vertex — used by HeroStone.tsx as the world-space anchor for Beat 5's
+ * hairline gold rule (components/dom/beats/Beat5Object.tsx). Computed once
+ * here rather than picked arbitrarily in HeroStone.tsx, since it depends on
+ * the actual generated geometry, not just an assumption about its shape.
+ */
+export const FACET_ANCHOR_LOCAL = (() => {
+  const final = CUT_STAGES[CUT_STAGES.length - 1];
+  const pos = final.attributes.position as THREE.BufferAttribute;
+  const best = new THREE.Vector3(0, -Infinity, 0);
+  const v = new THREE.Vector3();
+  for (let i = 0; i < pos.count; i++) {
+    v.fromBufferAttribute(pos, i);
+    if (v.y > best.y) best.copy(v);
+  }
+  return best;
+})();

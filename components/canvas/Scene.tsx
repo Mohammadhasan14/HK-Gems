@@ -6,6 +6,8 @@ import { HeroStone } from "./HeroStone";
 import { LightPoint } from "./LightPoint";
 import { Strata } from "./Strata";
 import { DustField } from "./DustField";
+import { BezelAssembly } from "./BezelAssembly";
+import { Vitrine } from "./Vitrine";
 import { KEY_LIGHT_POSITION } from "@/lib/sceneConstants";
 import { useScroll } from "@/store/useScroll";
 
@@ -51,6 +53,8 @@ export function Scene() {
       <Strata />
       <HeroStone />
       <DustField />
+      <BezelAssembly />
+      <Vitrine />
       <LightPoint />
       {highTier && (
         <ContactShadows

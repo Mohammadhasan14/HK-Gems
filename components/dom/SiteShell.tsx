@@ -7,6 +7,7 @@ import { ScrollProvider } from "./ScrollProvider";
 import { QualityController } from "./QualityController";
 import { Header } from "./Header";
 import { Loader } from "./Loader";
+import { WornExposure } from "./WornExposure";
 
 /**
  * Mounted once at the layout level (app/layout.tsx). Owns the persistent
@@ -18,6 +19,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
   return (
     <ScrollProvider>
       <CanvasRoot />
+      <WornExposure />
       <QualityController />
       <Header />
       <main className="relative z-0">{children}</main>
