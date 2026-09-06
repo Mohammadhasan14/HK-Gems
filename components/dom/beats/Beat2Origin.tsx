@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { BeatSection } from "../BeatSection";
+import { HERO_STONE } from "@/lib/stones";
 
 const LINES: Array<{ prefix: string; word: string }> = [
   { prefix: "Out of the", word: "mine" },
@@ -51,21 +52,52 @@ export function Beat2Origin() {
 
   return (
     <BeatSection id="origin">
-      <p className="font-sans text-xs font-medium uppercase tracking-[0.3em] text-white/40">
-        Origin
-      </p>
-      <div className="mt-8 space-y-4 font-display text-4xl font-light text-white sm:text-6xl lg:text-7xl">
-        {LINES.map(({ prefix, word }, i) => (
-          <div key={word} className="overflow-hidden">
-            <p
-              ref={(el) => {
-                lineRefs.current[i] = el;
-              }}
-            >
-              {prefix} <em className="italic">{word}</em>.
-            </p>
+      <div className="max-w-[34rem]">
+        <p className="font-sans text-[10px] font-medium uppercase tracking-[0.42em] text-white/45">
+          Chapter 02 — Origin
+        </p>
+
+        <div className="mt-7 space-y-3 font-display text-4xl font-light leading-[1.06] text-white sm:text-6xl lg:text-[4.25rem]">
+          {LINES.map(({ prefix, word }, i) => (
+            <div key={word} className="overflow-hidden pb-1">
+              <p
+                ref={(el) => {
+                  lineRefs.current[i] = el;
+                }}
+              >
+                {prefix} <em className="italic">{word}</em>.
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <span
+          aria-hidden="true"
+          className="mt-9 block h-px w-14 bg-[#C9A227]/70"
+        />
+
+        {/* Provenance, straight from the stone catalogue (lib/stones.ts) —
+            the specimen the whole journey follows, stated plainly the way a
+            gallery label would. Nothing invented for the layout's sake. */}
+        <dl className="mt-7 space-y-2 font-sans text-[10px] uppercase tracking-[0.24em] text-white/40">
+          <div className="flex gap-3">
+            <dt className="w-20 text-white/25">Stone</dt>
+            <dd>
+              {HERO_STONE.name}
+              <span className="ml-2 font-display text-xs normal-case tracking-normal text-white/30">
+                {HERO_STONE.urduName}
+              </span>
+            </dd>
           </div>
-        ))}
+          <div className="flex gap-3">
+            <dt className="w-20 text-white/25">Species</dt>
+            <dd>{HERO_STONE.scientificName}</dd>
+          </div>
+          <div className="flex gap-3">
+            <dt className="w-20 text-white/25">Origin</dt>
+            <dd>{HERO_STONE.origin}</dd>
+          </div>
+        </dl>
       </div>
     </BeatSection>
   );

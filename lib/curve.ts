@@ -38,8 +38,14 @@ import { BEATS } from "./beats";
 
 // prettier-ignore
 const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
-  new THREE.Vector3(0.3, 0.85, 5.6),   // 0  arrival start — close, elevated establishing shot
-  new THREE.Vector3(0.9, 0.15, 3.6),   // 1  arrival end / origin start — closer, intimate, off-centre
+  // Waypoints 0-1 are the hero framing. Pulled in from the original 5.6/3.6
+  // so the stone fills ~45% of frame height instead of ~33%: a subject, not
+  // an ornament floating in a void. The target waypoints below sit LEFT of
+  // and BELOW the stone's centre, which throws it right-of-frame and a
+  // little high — the classic editorial arrangement, leaving the left third
+  // clear for the headline column.
+  new THREE.Vector3(0.35, 0.55, 4.25), // 0  arrival start — elevated establishing shot
+  new THREE.Vector3(0.72, 0.16, 3.2),  // 1  arrival end / origin start — closer, intimate, off-centre
   new THREE.Vector3(-0.8, -0.6, 3.8),  // 2  origin end / inhale start — descended past strata
   new THREE.Vector3(0.0, -0.1, 2.4),   // 3  inhale end / cut start — dust converges, camera re-centres
   new THREE.Vector3(0.0,  0.0, 1.6),   // 4  cut hold — camera dead-still while facets are cut (Phase 2 densifies this)
@@ -53,8 +59,11 @@ const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
 
 // prettier-ignore
 const CAMERA_TARGET_WAYPOINTS: THREE.Vector3[] = [
-  new THREE.Vector3(-0.65, 0.0, 0),   // 0
-  new THREE.Vector3(-0.5, -0.05, 0),  // 1
+  // The brilliant's mass hangs below its girdle, so its visual centre is
+  // ~y -0.28, not 0. Aiming a little under that lifts the stone above the
+  // frame's midline rather than letting it sit low and bottom-heavy.
+  new THREE.Vector3(-0.60, -0.34, 0), // 0
+  new THREE.Vector3(-0.44, -0.30, 0), // 1
   new THREE.Vector3(-0.1, -0.1, 0),   // 2
   new THREE.Vector3(0.0, 0.0, 0),   // 3
   new THREE.Vector3(0.0, 0.0, 0),   // 4

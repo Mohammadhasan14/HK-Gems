@@ -28,7 +28,11 @@ export function BeatSection({
       id={id}
       data-beat={id}
       style={{ minHeight: `${beat.pinVh}vh` }}
-      className={`relative flex flex-col justify-center px-6 sm:px-10 ${className}`}
+      // Left padding on lg clears the fixed journey rail
+      // (components/dom/StoryNav.tsx); right padding clears the progress
+      // hairline (components/dom/ScrollProgress.tsx). Applied here, once,
+      // so every beat's text column stays out from under the chrome.
+      className={`relative flex flex-col justify-center px-6 sm:px-10 sm:pr-20 lg:pl-44 ${className}`}
     >
       {children}
     </section>

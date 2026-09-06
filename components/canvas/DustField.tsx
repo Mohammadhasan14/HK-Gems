@@ -26,6 +26,28 @@ function hash(seed: number): number {
 }
 
 /**
+ * Soft round mote sprite. Without a map, `pointsMaterial` draws each point
+ * as a hard-edged SQUARE — at these sizes that read as grey confetti
+ * floating around the stone, which is exactly the "random geometric debris"
+ * that made the scene look like a WebGL demo rather than atmosphere. A
+ * radial alpha falloff turns the same points into airborne dust.
+ */
+function moteTexture(): THREE.CanvasTexture {
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  const gradient = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gradient.addColorStop(0, "rgba(255,255,255,1)");
+  gradient.addColorStop(0.35, "rgba(255,255,255,0.5)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, size, size);
+  return new THREE.CanvasTexture(canvas);
+}
+
+/**
  * Beat 2->3's "Inhale": ambient dust/haze around the hero stone that
  * accelerates inward and is absorbed at the hull, timed to the Inhale beat
  * (lib/beats.ts). Ambient before it (idle drift, present from first paint),
@@ -43,6 +65,7 @@ export function DustField() {
 
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
+  const mote = useMemo(moteTexture, []);
 
   const { positions, dirs, idleRadii, seeds } = useMemo(() => {
     const positions = new Float32Array(count * 3);
@@ -109,7 +132,8 @@ export function DustField() {
       <pointsMaterial
         ref={materialRef}
         color="#e8dfc8"
-        size={highTier ? 0.035 : 0.09}
+        map={mote}
+        size={highTier ? 0.05 : 0.12}
         sizeAttenuation
         transparent
         opacity={0}

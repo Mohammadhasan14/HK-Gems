@@ -6,6 +6,9 @@ import { DevHud } from "@/components/hud/DevHud";
 import { ScrollProvider } from "./ScrollProvider";
 import { QualityController } from "./QualityController";
 import { Header } from "./Header";
+import { StoryNav } from "./StoryNav";
+import { ScrollProgress } from "./ScrollProgress";
+import { ScrollCue } from "./ScrollCue";
 import { Loader } from "./Loader";
 import { WornExposure } from "./WornExposure";
 
@@ -22,6 +25,9 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <WornExposure />
       <QualityController />
       <Header />
+      <StoryNav />
+      <ScrollProgress />
+      <ScrollCue />
       <main className="relative z-0">{children}</main>
       <Loader />
       <DevHud />

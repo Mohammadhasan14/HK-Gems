@@ -3,6 +3,7 @@
 import { Environment, ContactShadows } from "@react-three/drei";
 import { CameraRig } from "./CameraRig";
 import { HeroStone } from "./HeroStone";
+import { HeroEnvironment } from "./HeroEnvironment";
 import { LightPoint } from "./LightPoint";
 import { Strata } from "./Strata";
 import { DustField } from "./DustField";
@@ -37,39 +38,60 @@ export function Scene() {
           "intensity 1 = fully lit" scale — these values look plausible in
           the editor but read as near-black once tone mapping compresses
           them at these distances. */}
-      <ambientLight intensity={0.4} />
+      {/* A three-point product-photography rig, not a general "light the
+          scene" setup. Ambient is kept LOW on purpose — flat fill is what
+          flattens facets into one grey shape; the contrast between a lit
+          facet and its dark neighbour is the entire read of a cut stone. */}
+      <ambientLight intensity={0.22} />
+      {/* KEY — warm, high, tight. Everything else is measured against it. */}
       <spotLight
         position={KEY_LIGHT_POSITION}
-        angle={0.35}
-        penumbra={0.6}
-        intensity={300}
+        angle={0.42}
+        penumbra={0.75}
+        intensity={250}
+        color="#fff2dc"
         castShadow
       />
-      {/* Warm gold rim/kicker light, behind and opposite the key — separates
-          the stone's silhouette and facet edges from the near-black
-          background instead of relying on flat ambient fill alone, and ties
-          the highlight into the brand's own gold accent rather than a
-          generic cool "product render" kicker. Deliberately dim relative to
-          the key so it reads as edge definition, not a second key light. */}
-      <pointLight position={[-3.0, 1.0, -3.2]} intensity={42} color="#d9b877" />
+      {/* FILL — cool and soft from the opposite side, low enough that it only
+          keeps the shadow side from going fully black. Bounce, not a light. */}
+      <directionalLight
+        position={[-5, 1.5, 3]}
+        intensity={0.5}
+        color="#b9c6d8"
+      />
+      {/* RIM — warm gold kicker behind and opposite the key. Separates the
+          stone's silhouette and facet edges from the ground rather than
+          relying on ambient, and ties the highlight to the brand's own gold
+          instead of a generic cool product-render kicker. */}
+      <pointLight position={[-3.0, 1.0, -3.2]} intensity={48} color="#d9b877" />
+      {/* BOUNCE — a dim warm uplight standing in for light returning off the
+          ground pool, so the pavilion never reads as a solid black wedge. */}
+      <pointLight position={[0.4, -2.4, 1.4]} intensity={16} color="#c8a06a" />
       <Environment
         preset="studio"
-        environmentIntensity={0.7}
+        environmentIntensity={1.5}
         resolution={highTier ? 256 : 32}
       />
+      {/* Beats 1-2 only — fades itself out before Cut, see the component. */}
+      <HeroEnvironment />
       <Strata />
       <HeroStone />
       <DustField />
       <BezelAssembly />
       <Vitrine />
       <LightPoint />
-      {highTier && (
+      {false && highTier && (
+        // Sits at the same height as HeroEnvironment's ground pool so the
+        // stone casts into the light it's standing in. At the old -1.5 the
+        // two read as two different floors and the shadow became a dark
+        // saucer hanging in space below the stone. Wider and softer as well:
+        // at scale 1.6 the plane's own edge was visible against the pool.
         <ContactShadows
-          position={[0, -1.5, 0]}
-          opacity={0.25}
-          blur={2.4}
-          far={1.1}
-          scale={1.6}
+          position={[0, -1.02, 0.35]}
+          opacity={0.55}
+          blur={3.2}
+          far={1.5}
+          scale={4}
         />
       )}
     </>

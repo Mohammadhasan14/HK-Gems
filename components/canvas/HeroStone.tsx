@@ -8,6 +8,7 @@ import { useScroll } from "@/store/useScroll";
 import { HERO_STONE } from "@/lib/stones";
 import { BEATS } from "@/lib/beats";
 import { CUT_STAGES, CUT_STAGE_COUNT, FACET_ANCHOR_LOCAL } from "@/lib/cutStages";
+import { GEM_DISPLAY_GEOMETRY } from "@/lib/gemGeometry";
 import { hud } from "@/lib/hud";
 import { facetAnchor } from "@/lib/facetAnchor";
 
@@ -29,10 +30,13 @@ const CUT = BEATS.find((b) => b.id === "cut")!;
 const INTRO_SCALE_FROM = 0.85;
 const YAW_SWING = 0.32;
 
-// Rough/unpolished read for Arrival through Origin and most of Inhale — the
-// stone hasn't been "cut" yet. Final values match the two material
-// branches' original targets.
-const ROUGH_UNCUT = 0.9;
+// Less-polished read for Arrival through Origin and most of Inhale — the
+// stone hasn't been finished yet. This used to be 0.9, which frosted the
+// hero into an opaque grey lump: with the house cut now carrying real
+// facets, near-total diffusion destroyed the very structure the geometry
+// exists to show. 0.3 still reads visibly softer than the polished value it
+// snaps to, while letting light travel through the facets in the hero shot.
+const ROUGH_UNCUT = 0.3;
 const ROUGH_POLISHED_HIGH = 0.02;
 const ROUGH_POLISHED_LOW = 0.08;
 
@@ -43,9 +47,12 @@ const ROUGH_POLISHED_LOW = 0.08;
 const HERO_RADIUS = 1;
 
 /**
- * TODO(modeller): Phase 1/2 placeholder. This procedurally-cut icosahedron
- * (lib/cutStages.ts) stands in for HERO_STONE (lib/stones.ts) until the real
- * modeller-authored cut-stage geometry lands.
+ * TODO(modeller): placeholder geometry stands in for HERO_STONE
+ * (lib/stones.ts) until the real modeller-authored model lands. Two sources,
+ * swapped by scroll position (see modeRef in useFrame below): the
+ * purpose-built faceted cut (lib/gemGeometry.ts) before Beat 3 begins, then
+ * the procedurally-cut icosahedron sequence (lib/cutStages.ts) for Beat 3
+ * onward, unchanged.
  *
  * Full model spec (stage count, pivot, poly budget, UV requirement,
  * material target) lives in /MODELS.md — that file is the single source of
@@ -61,24 +68,30 @@ export function HeroStone() {
   // (drei's MeshTransmissionMaterial and native meshPhysicalMaterial) —
   // typed loosely here since the ref's concrete class differs per branch.
   const materialRef = useRef<{ roughness: number; side: THREE.Side } | null>(null);
-  const stageRef = useRef(0);
+  // "display" (the purpose-built gem cut, lib/gemGeometry.ts) before Cut
+  // begins, or a CUT_STAGES index once it has — see the module doc comment.
+  const modeRef = useRef<"display" | number>("display");
 
   useFrame(() => {
     const { progress } = useScroll.getState();
 
-    // Cut-stage swap: which of the 5 precomputed geometries is showing,
+    // Before Cut: the real faceted gem silhouette. From Cut onward: the
+    // existing 5-stage rough-hull -> cut-stage swap, completely unchanged —
     // discretized by scroll position within the Cut beat only. MODELS.md's
     // "not runtime CSG" delivery format — this is a reference swap between
     // geometries that already exist, not a live boolean op.
-    let stage = 0;
-    if (progress >= CUT.end) stage = CUT_STAGE_COUNT - 1;
-    else if (progress > CUT.start) {
-      const local = (progress - CUT.start) / (CUT.end - CUT.start);
-      stage = Math.min(CUT_STAGE_COUNT - 1, Math.floor(local * CUT_STAGE_COUNT));
+    let mode: "display" | number = "display";
+    if (progress >= CUT.start) {
+      if (progress >= CUT.end) {
+        mode = CUT_STAGE_COUNT - 1;
+      } else {
+        const local = (progress - CUT.start) / (CUT.end - CUT.start);
+        mode = Math.min(CUT_STAGE_COUNT - 1, Math.floor(local * CUT_STAGE_COUNT));
+      }
     }
-    if (stage !== stageRef.current && meshRef.current) {
-      meshRef.current.geometry = CUT_STAGES[stage];
-      stageRef.current = stage;
+    if (mode !== modeRef.current && meshRef.current) {
+      meshRef.current.geometry = mode === "display" ? GEM_DISPLAY_GEOMETRY : CUT_STAGES[mode];
+      modeRef.current = mode;
     }
 
     if (meshRef.current) {
@@ -133,7 +146,7 @@ export function HeroStone() {
     <mesh
       ref={meshRef}
       position={[0, 0, 0]}
-      geometry={CUT_STAGES[0]}
+      geometry={GEM_DISPLAY_GEOMETRY}
       castShadow
       receiveShadow
     >
@@ -146,19 +159,23 @@ export function HeroStone() {
           ref={materialRef}
           flatShading
           transmission={1}
-          thickness={2.2}
+          // Thinner and far less absorbent than before (2.2 / 1.1): at those
+          // values the stone swallowed nearly all the light entering it and
+          // read as graphite with a few blown-out facets, rather than a
+          // quartz you can see into. Light now carries through the pavilion.
+          thickness={1.3}
           ior={IOR}
           roughness={ROUGH_UNCUT}
-          chromaticAberration={0.04}
+          chromaticAberration={0.05}
           anisotropy={0.1}
           samples={16}
           resolution={1024}
           color={HERO_STONE.color}
-          attenuationColor="#fff3da"
-          attenuationDistance={1.1}
+          attenuationColor="#fff6e6"
+          attenuationDistance={3.2}
           clearcoat={1}
-          clearcoatRoughness={0.12}
-          envMapIntensity={1.35}
+          clearcoatRoughness={0.06}
+          envMapIntensity={1.7}
         />
       ) : (
         // LOW/STATIC: native MeshPhysicalMaterial.transmission is a
