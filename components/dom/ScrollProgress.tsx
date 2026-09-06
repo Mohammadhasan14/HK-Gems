@@ -35,6 +35,8 @@ export function ScrollProgress() {
   return (
     <div
       aria-hidden="true"
+      // Same reason as StoryNav's shadow: survives Beat 6's white wash.
+      style={{ textShadow: "0 1px 10px rgba(8,8,10,0.9)" }}
       className="fixed right-8 top-1/2 z-30 hidden -translate-y-1/2 flex-col items-center gap-4 sm:flex"
     >
       <span className="font-sans text-[10px] tabular-nums tracking-[0.2em] text-[#C9A227]">

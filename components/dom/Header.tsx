@@ -43,6 +43,16 @@ function Monogram() {
 export function Header() {
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex items-center justify-between px-6 py-5 sm:px-10">
+      {/* Scrim. The canvas behind the header is not always dark — Beat 3
+          fills the frame with a lit facet and Beat 6 deliberately blows out
+          to warm white — and light text over either of those disappears
+          entirely. A short gradient keeps the wordmark and links legible
+          across the whole scroll without putting a bar, border or blur on
+          the header itself. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-28 bg-gradient-to-b from-[#08080A]/75 via-[#08080A]/35 to-transparent"
+      />
       <a href="#arrival" className="flex items-center gap-3 text-[#C9A227]">
         <Monogram />
         <span className="font-display text-[15px] font-light uppercase leading-[1.05] tracking-[0.22em]">

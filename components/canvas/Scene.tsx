@@ -1,6 +1,10 @@
 "use client";
 
+import { useRef } from "react";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { Environment, ContactShadows } from "@react-three/drei";
+import { BEATS } from "@/lib/beats";
 import { CameraRig } from "./CameraRig";
 import { HeroStone } from "./HeroStone";
 import { HeroEnvironment } from "./HeroEnvironment";
@@ -27,6 +31,45 @@ import { useScroll } from "@/store/useScroll";
  * one-time cost cheap on LOW/STATIC rather than needing to omit it.
  * ContactShadows (a genuine render-to-texture pass) stays HIGH-only.
  */
+const CUT = BEATS.find((b) => b.id === "cut")!;
+
+/**
+ * ContactShadows, but only from the Cut beat onward.
+ *
+ * It is a shadow CATCHER: a plane that darkens whatever is behind it. For
+ * every beat from Cut on, "behind it" is the near-black clear colour, so the
+ * darkening is invisible and only the stone's shadow reads — which is how it
+ * was authored and how it still behaves there. During Beats 1-2 there is now
+ * a lit backdrop behind it (HeroEnvironment), and the plane darkens that
+ * into a distinctly visible dark disc under the stone — the exact "floating
+ * geometric object" artefact this iteration is removing. Hiding it for those
+ * two beats is the fix; the backdrop's own falloff carries the floor there,
+ * as it does in the reference, where the stone floats above a lit ground
+ * rather than sitting on a hard shadow.
+ *
+ * Gated by a ref in useFrame, not by React state — Scene must not re-render
+ * on scroll.
+ */
+function CutOnwardContactShadows() {
+  const ref = useRef<THREE.Group>(null);
+  useFrame(() => {
+    if (ref.current) ref.current.visible = useScroll.getState().progress >= CUT.start;
+  });
+  return (
+    <group ref={ref} visible={false}>
+      {/* Values exactly as originally authored, so Beats 3-7 shade
+          identically to before this iteration. */}
+      <ContactShadows
+        position={[0, -1.5, 0]}
+        opacity={0.25}
+        blur={2.4}
+        far={1.1}
+        scale={1.6}
+      />
+    </group>
+  );
+}
+
 export function Scene() {
   const quality = useScroll((s) => s.quality);
   const highTier = quality === "high";
@@ -64,9 +107,14 @@ export function Scene() {
           relying on ambient, and ties the highlight to the brand's own gold
           instead of a generic cool product-render kicker. */}
       <pointLight position={[-3.0, 1.0, -3.2]} intensity={48} color="#d9b877" />
-      {/* BOUNCE — a dim warm uplight standing in for light returning off the
-          ground pool, so the pavilion never reads as a solid black wedge. */}
-      <pointLight position={[0.4, -2.4, 1.4]} intensity={16} color="#c8a06a" />
+      {/* BOUNCE — warm uplight from the ground pool's height. This is the
+          underlighting a gem photographer puts beneath a transparent stone:
+          a clear gem transmits whatever is under it, so with nothing there
+          the table and crown read as solid black no matter how hard the key
+          is pushed. Light entering the pavilion travels up and out through
+          the crown, which is what actually makes the stone look lit from
+          within rather than like polished onyx. */}
+      <pointLight position={[0.3, -2.2, 1.2]} intensity={75} color="#d8ab72" />
       <Environment
         preset="studio"
         environmentIntensity={1.5}
@@ -80,20 +128,7 @@ export function Scene() {
       <BezelAssembly />
       <Vitrine />
       <LightPoint />
-      {false && highTier && (
-        // Sits at the same height as HeroEnvironment's ground pool so the
-        // stone casts into the light it's standing in. At the old -1.5 the
-        // two read as two different floors and the shadow became a dark
-        // saucer hanging in space below the stone. Wider and softer as well:
-        // at scale 1.6 the plane's own edge was visible against the pool.
-        <ContactShadows
-          position={[0, -1.02, 0.35]}
-          opacity={0.55}
-          blur={3.2}
-          far={1.5}
-          scale={4}
-        />
-      )}
+      {highTier && <CutOnwardContactShadows />}
     </>
   );
 }

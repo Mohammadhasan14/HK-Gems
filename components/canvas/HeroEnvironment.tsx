@@ -15,20 +15,21 @@ const INHALE = BEATS.find((b) => b.id === "inhale")!;
  * The problem this solves: with nothing but a flat #08080A clear colour, the
  * stone had no environment to belong to — it read as an object composited
  * onto a void rather than a subject lit inside a space, which is most of the
- * distance between "WebGL demo" and "product film". Three cheap, entirely
+ * distance between "WebGL demo" and "product film". Two cheap, entirely
  * non-interactive layers supply that space:
  *
  *   backdrop  a large plane far behind everything, carrying a soft warm
  *             pool of light that falls off into black — the "wall" that
- *             gives the frame depth instead of absolute nothing
+ *             gives the frame depth instead of absolute nothing, and the
+ *             thing the transmissive stone actually has to transmit
  *   shaft     a tall soft column of light descending through the stone,
  *             the source the backdrop glow implies
- *   ground    an elliptical pool on the floor beneath the stone, which is
- *             what actually grounds it in the space rather than floating
  *
- * All three are unlit, additive, depth-write-off gradients — no extra
- * lights, no shadow passes, no postprocessing. They cost one draw call each
- * and are safe on the LOW tier.
+ * Both are unlit, depth-write-off gradients — no extra lights, no shadow
+ * passes, no postprocessing. They cost one draw call each and are safe on
+ * the LOW tier. Contact with the floor is left to Scene.tsx's
+ * ContactShadows; see the note at the bottom of this component for why a
+ * third "ground glow" layer was tried twice and removed.
  *
  * Every layer is faded to fully transparent BEFORE the Cut beat begins, so
  * Beat 3 onward renders precisely as it did before this component existed —
@@ -94,28 +95,26 @@ function shaftTexture(): THREE.CanvasTexture {
 
 // Tuned against the rendered frame, not guessed: at higher values the
 // backdrop stopped reading as depth and became a brown haze washing over
-// the header, and the ground pool became a bright blob competing with the
-// stone. The environment's job is to be felt, not seen.
-const BACKDROP_OPACITY = 0.4;
-const SHAFT_OPACITY = 0.28;
-const GROUND_OPACITY = 0.3;
+// the header rather than as depth behind the stone. The environment's job
+// is to be felt, not seen.
+const BACKDROP_OPACITY = 0.78;
+const SHAFT_OPACITY = 0.34;
 
 export function HeroEnvironment() {
   const quality = useScroll((s) => s.quality);
   const groupRef = useRef<THREE.Group>(null);
   const backdropRef = useRef<THREE.MeshBasicMaterial>(null);
   const shaftRef = useRef<THREE.MeshBasicMaterial>(null);
-  const groundRef = useRef<THREE.MeshBasicMaterial>(null);
 
   const textures = useMemo(
     () => ({
-      backdrop: radialTexture("rgba(84,62,38,0.9)", "rgba(8,8,10,0)", [
-        [0.22, "rgba(46,34,22,0.42)"],
-        [0.45, "rgba(20,16,13,0.1)"],
-      ]),
-      ground: radialTexture("rgba(255,226,178,0.85)", "rgba(255,214,160,0)", [
-        [0.18, "rgba(206,168,110,0.3)"],
-        [0.42, "rgba(96,76,50,0.07)"],
+      // Brighter and warmer than a decorative haze needs to be, because
+      // this is also what the stone TRANSMITS: a transparent gem can only
+      // be as luminous as whatever sits behind it, so the backdrop is doing
+      // double duty as the material's light source, not just as depth.
+      backdrop: radialTexture("rgba(150,112,68,0.95)", "rgba(8,8,10,0)", [
+        [0.2, "rgba(88,64,40,0.5)"],
+        [0.44, "rgba(30,23,18,0.12)"],
       ]),
       shaft: shaftTexture(),
     }),
@@ -134,7 +133,6 @@ export function HeroEnvironment() {
     if (groupRef.current) groupRef.current.visible = opacity > 0.001;
     if (backdropRef.current) backdropRef.current.opacity = opacity * BACKDROP_OPACITY;
     if (shaftRef.current) shaftRef.current.opacity = opacity * SHAFT_OPACITY;
-    if (groundRef.current) groundRef.current.opacity = opacity * GROUND_OPACITY;
   });
 
   return (
@@ -142,7 +140,11 @@ export function HeroEnvironment() {
       {/* Backdrop — well behind the stone and large enough to fill frame at
           every Beat 1-2 camera position. Normal (not additive) blending so
           it reads as a lit wall rather than a glow floating in front. */}
-      <mesh position={[0.05, -0.35, -6]}>
+      {/* Centred so its glow lands BEHIND the stone on screen, not above it.
+          At the hero camera's elevation a centre of y -0.35 projected up to
+          ~27% of frame height, reading as a stray sun in the top corner
+          instead of the light the stone is standing in front of. */}
+      <mesh position={[0.05, -2.1, -6]}>
         <planeGeometry args={[24, 15]} />
         <meshBasicMaterial
           ref={backdropRef}
@@ -156,7 +158,7 @@ export function HeroEnvironment() {
 
       {/* Light shaft descending onto the stone. Skipped on the lower tiers:
           it is the most overdraw-heavy layer and the least load-bearing —
-          the ground pool alone still grounds the stone. */}
+          the backdrop alone still carries the depth. */}
       {quality === "high" && (
         <mesh position={[0.15, 1.9, -1.6]}>
           <planeGeometry args={[3.4, 6.4]} />
@@ -172,19 +174,13 @@ export function HeroEnvironment() {
         </mesh>
       )}
 
-      {/* Ground pool — flat on the floor, just under the stone's culet. */}
-      <mesh position={[0, -1.0, 0.35]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[5.4, 5.4]} />
-        <meshBasicMaterial
-          ref={groundRef}
-          map={textures.ground}
-          transparent
-          opacity={0}
-          depthWrite={false}
-          blending={THREE.AdditiveBlending}
-          toneMapped={false}
-        />
-      </mesh>
+      {/* No separate ground-glow layer here, deliberately. Both a flat floor
+          plane and a camera-facing sprite were tried, and each drew a
+          visible dark rim under the stone where its own falloff ended —
+          precisely the kind of stray disc this iteration is removing. The
+          backdrop's lower falloff already reads as the floor the stone
+          stands on, and Scene.tsx's ContactShadows supplies real contact,
+          so the layer earned its removal rather than more tuning. */}
     </group>
   );
 }

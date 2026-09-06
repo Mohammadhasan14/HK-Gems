@@ -14,10 +14,20 @@ import { BEATS, type BeatId } from "@/lib/beats";
 export function BeatSection({
   id,
   className = "",
+  align = "center",
   children,
 }: {
   id: BeatId;
   className?: string;
+  /**
+   * Where the copy sits in the section's own height. "top" keeps the text
+   * in the upper part of the frame on NARROW viewports only, reverting to
+   * centred from `sm` up. On a phone the canvas has no free column beside
+   * the stone the way a desktop window does, so centred copy lands directly
+   * on top of it; stacking type above the stone is the mobile composition
+   * rather than a shrunk copy of the desktop one.
+   */
+  align?: "center" | "top";
   children: ReactNode;
 }) {
   const beat = BEATS.find((b) => b.id === id);
@@ -32,7 +42,11 @@ export function BeatSection({
       // (components/dom/StoryNav.tsx); right padding clears the progress
       // hairline (components/dom/ScrollProgress.tsx). Applied here, once,
       // so every beat's text column stays out from under the chrome.
-      className={`relative flex flex-col justify-center px-6 sm:px-10 sm:pr-20 lg:pl-44 ${className}`}
+      className={`relative flex flex-col px-6 sm:px-10 sm:pr-20 lg:pl-44 ${
+        align === "top"
+          ? "justify-start pt-28 sm:justify-center sm:pt-0"
+          : "justify-center"
+      } ${className}`}
     >
       {children}
     </section>

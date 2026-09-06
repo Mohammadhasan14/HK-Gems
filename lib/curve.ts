@@ -44,8 +44,15 @@ const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
   // and BELOW the stone's centre, which throws it right-of-frame and a
   // little high — the classic editorial arrangement, leaving the left third
   // clear for the headline column.
-  new THREE.Vector3(0.35, 0.55, 4.25), // 0  arrival start — elevated establishing shot
-  new THREE.Vector3(0.72, 0.16, 3.2),  // 1  arrival end / origin start — closer, intimate, off-centre
+  // Elevation matters as much as distance here: at y 0.55 the camera sat
+  // only ~11 deg above the stone, so the crown — which tilts 34 deg up —
+  // faced away from both the key light and the bright half of the
+  // environment, and every crown facet rendered the same flat black. Lifting
+  // to ~19 deg is the angle gem photography actually shoots a brilliant
+  // from, and it lets each crown facet take a different value so the cut
+  // reads as structure.
+  new THREE.Vector3(0.35, 1.15, 4.05), // 0  arrival start — elevated establishing shot
+  new THREE.Vector3(0.72, 0.5, 3.1),   // 1  arrival end / origin start — closer, intimate, off-centre
   new THREE.Vector3(-0.8, -0.6, 3.8),  // 2  origin end / inhale start — descended past strata
   new THREE.Vector3(0.0, -0.1, 2.4),   // 3  inhale end / cut start — dust converges, camera re-centres
   new THREE.Vector3(0.0,  0.0, 1.6),   // 4  cut hold — camera dead-still while facets are cut (Phase 2 densifies this)
@@ -62,8 +69,8 @@ const CAMERA_TARGET_WAYPOINTS: THREE.Vector3[] = [
   // The brilliant's mass hangs below its girdle, so its visual centre is
   // ~y -0.28, not 0. Aiming a little under that lifts the stone above the
   // frame's midline rather than letting it sit low and bottom-heavy.
-  new THREE.Vector3(-0.60, -0.34, 0), // 0
-  new THREE.Vector3(-0.44, -0.30, 0), // 1
+  new THREE.Vector3(-0.60, -0.12, 0), // 0
+  new THREE.Vector3(-0.44, -0.16, 0), // 1
   new THREE.Vector3(-0.1, -0.1, 0),   // 2
   new THREE.Vector3(0.0, 0.0, 0),   // 3
   new THREE.Vector3(0.0, 0.0, 0),   // 4

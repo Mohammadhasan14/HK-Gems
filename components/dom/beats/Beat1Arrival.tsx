@@ -13,7 +13,7 @@ import { BeatSection } from "../BeatSection";
  */
 export function Beat1Arrival() {
   return (
-    <BeatSection id="arrival" className="items-start">
+    <BeatSection id="arrival" align="top" className="items-start">
       <div className="max-w-[34rem]">
         <p className="font-sans text-[10px] font-medium uppercase tracking-[0.42em] text-white/45">
           HK Gems — Stones of Origin

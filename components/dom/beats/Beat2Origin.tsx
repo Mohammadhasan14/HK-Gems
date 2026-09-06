@@ -51,7 +51,7 @@ export function Beat2Origin() {
   }, []);
 
   return (
-    <BeatSection id="origin">
+    <BeatSection id="origin" align="top">
       <div className="max-w-[34rem]">
         <p className="font-sans text-[10px] font-medium uppercase tracking-[0.42em] text-white/45">
           Chapter 02 — Origin

@@ -158,12 +158,23 @@ export function HeroStone() {
         <MeshTransmissionMaterial
           ref={materialRef}
           flatShading
+          // Fully transmissive. Backing this off to ~0.85 to give the crown
+          // more surface reflectivity was tried and rejected: it lifted the
+          // dark crown a little but turned the pavilion milky, trading the
+          // stone's transparency for a plastic read. The crown's contrast is
+          // instead handled by camera elevation (lib/curve.ts waypoint 0)
+          // and the underlight in Scene.tsx.
           transmission={1}
-          // Thinner and far less absorbent than before (2.2 / 1.1): at those
-          // values the stone swallowed nearly all the light entering it and
-          // read as graphite with a few blown-out facets, rather than a
-          // quartz you can see into. Light now carries through the pavilion.
-          thickness={1.3}
+          // Thin, and far less absorbent than before (was 2.2 / 1.1). Two
+          // reasons: at high absorption the stone swallowed the light
+          // entering it and read as graphite, and at high thickness the
+          // refraction offset was large enough that the crown facets sampled
+          // the stone's own dark interior instead of the lit backdrop behind
+          // it — the crown went black no matter how the lights were pushed.
+          // A real brilliant returns light through its table by total
+          // internal reflection, which single-bounce transmission cannot do,
+          // so keeping the refraction shallow is what stands in for it.
+          thickness={0.5}
           ior={IOR}
           roughness={ROUGH_UNCUT}
           chromaticAberration={0.05}
@@ -175,7 +186,7 @@ export function HeroStone() {
           attenuationDistance={3.2}
           clearcoat={1}
           clearcoatRoughness={0.06}
-          envMapIntensity={1.7}
+          envMapIntensity={2.2}
         />
       ) : (
         // LOW/STATIC: native MeshPhysicalMaterial.transmission is a

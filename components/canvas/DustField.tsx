@@ -65,7 +65,7 @@ export function DustField() {
 
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.PointsMaterial>(null);
-  const mote = useMemo(moteTexture, []);
+  const mote = useMemo(() => moteTexture(), []);
 
   const { positions, dirs, idleRadii, seeds } = useMemo(() => {
     const positions = new Float32Array(count * 3);

@@ -26,6 +26,10 @@ export function StoryNav() {
   return (
     <nav
       aria-label="Story chapters"
+      // The text-shadow is doing real work, not decoration: Beat 6 washes
+      // the frame to warm white, and pale labels vanish into it. A dark
+      // shadow holds them without needing a panel behind the rail.
+      style={{ textShadow: "0 1px 10px rgba(8,8,10,0.9)" }}
       className="fixed left-8 top-1/2 z-30 hidden -translate-y-1/2 lg:block"
     >
       <ol className="relative flex flex-col gap-7">

@@ -72,7 +72,7 @@ export function LightPoint() {
   const { camera, size } = useThree();
 
   const position = useMemo(() => HIGHLIGHT_POSITION.clone(), []);
-  const glint = useMemo(glintTexture, []);
+  const glint = useMemo(() => glintTexture(), []);
 
   useFrame(() => {
     if (!meshRef.current || !materialRef.current) return;
