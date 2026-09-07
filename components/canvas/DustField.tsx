@@ -9,11 +9,11 @@ import { BEATS } from "@/lib/beats";
 const INHALE = BEATS.find((b) => b.id === "inhale")!;
 const CUT = BEATS.find((b) => b.id === "cut")!;
 
-// Just outside the hero stone's unit radius — "the instant the last mote
-// passes the hull" (see HeroStone.tsx's roughness snap) is this radius, not
-// the exact centre, so motes read as absorbed at the surface rather than
-// flying through it.
-const HULL_RADIUS = 0.06;
+// The rough stone's own surface (lib/rawStone.ts): motes are absorbed AT the
+// stone, not at its centre, so they read as settling onto it rather than
+// flying through it. Was 0.06 back when the stone was a unit sphere and the
+// motes effectively converged on a point.
+const HULL_RADIUS = 1.25;
 const IDLE_OPACITY = 0.28;
 
 // Deterministic pseudo-random in [0, 1) — Math.random() during render trips

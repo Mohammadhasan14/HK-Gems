@@ -5,28 +5,20 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { loaderBridge } from "@/lib/loader";
 import { KEY_LIGHT_POSITION } from "@/lib/sceneConstants";
-import { GEM_CROWN_HIGHLIGHT_LOCAL } from "@/lib/gemGeometry";
+import { rawSurfacePoint } from "@/lib/rawStone";
 
 /**
- * Where the highlight sits: on a crown facet of the house cut
- * (lib/gemGeometry.ts), rotated round to the key light's side. This used to
- * be a point on an imagined unit SPHERE around the stone, which — now that
- * the stone is a real brilliant barely 0.32 tall at its table — left the dot
- * hovering in empty air beside it, reading as a stray floating object rather
- * than a highlight. Anchoring it to the actual facet ring is what makes it
- * read as light caught ON the stone.
+ * Where the highlight sits: on the rough's actual surface (lib/rawStone.ts),
+ * in the direction the key light comes from — which is exactly where a
+ * specular highlight lands. It used to be a point on an imagined unit sphere
+ * around the stone, which left it hovering in empty air beside the mesh,
+ * reading as a stray floating object rather than as light. Sampling the real
+ * surface is what makes it read as a glint ON the stone, at any stone size.
  */
 const HIGHLIGHT_POSITION = (() => {
-  const p = GEM_CROWN_HIGHLIGHT_LOCAL.clone();
-  const radius = Math.hypot(p.x, p.z);
-  // Swing it to the azimuth the key light actually comes from, keeping the
-  // facet's own height/radius so it stays on the crown.
-  const keyAzimuth = Math.atan2(KEY_LIGHT_POSITION[2], KEY_LIGHT_POSITION[0]);
-  p.x = Math.cos(keyAzimuth) * radius;
-  p.z = Math.sin(keyAzimuth) * radius;
-  // A hair proud of the surface so it is never z-fought by the facet itself.
-  p.multiplyScalar(1.015);
-  return p;
+  const dir = new THREE.Vector3(...KEY_LIGHT_POSITION).normalize();
+  // A hair proud of the surface so it is never z-fought by the stone itself.
+  return rawSurfacePoint(dir).multiplyScalar(1.01);
 })();
 
 /** Physical size of the glint sprite, in world units. */

@@ -59,8 +59,12 @@ export const STONES: Record<StoneId, StoneConfig> = {
     scientificName: "Turquoise",
     origin: "Nishapur, Iran",
     optics: "opaque",
-    color: "#2f9e8f",
-    description: "Nishapuri turquoise, prized for its matrix veining.",
+    color: "#4fa8a4",
+    carat: "14.6 ct",
+    metal: "Sterling Silver 925",
+    finish: "Hand-polished bezel",
+    description:
+      "The hero stone. Nishapuri turquoise, prized for the host-rock matrix webbing its face.",
   },
   aqeeq: {
     id: "aqeeq",
@@ -107,8 +111,18 @@ export const STONES: Record<StoneId, StoneConfig> = {
   },
 };
 
-/** Swap this one value to change the hero stone site-wide. */
-export const HERO_STONE_ID: StoneId = "durr-e-najaf";
+/**
+ * Swap this one value to change the hero stone site-wide.
+ *
+ * Firoza, not Durr-e-Najaf: the site's visual identity is the turquoise
+ * specimen — an opaque blue-green body crossed by host-rock matrix. That is
+ * a stone with its own colour under any light, where a clear quartz can only
+ * ever show what is behind it, which on this near-black set was nothing.
+ * Every piece of copy that names the stone reads it from here (see
+ * components/dom/beats/Beat2Origin.tsx), so this one line moves the
+ * provenance with it.
+ */
+export const HERO_STONE_ID: StoneId = "firoza";
 export const HERO_STONE = STONES[HERO_STONE_ID];
 
 /** Beat 7 vitrine order — Durr-e-Najaf returns last, closing the loop. */

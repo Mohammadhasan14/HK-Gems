@@ -2,17 +2,17 @@ import * as THREE from "three";
 
 /**
  * The HK Gems house cut — a purpose-built brilliant, authored facet group by
- * facet group, for every beat before The Cut. Replaces the generic
- * icosahedron read those beats had: a primitive has no lapidary structure,
- * so no amount of material work could make it read as "cut gemstone" rather
- * than "low-poly rock."
+ * facet group. Replaces the generic icosahedron the stone used to be: a
+ * primitive has no lapidary structure, so no amount of material work could
+ * make it read as "cut gemstone" rather than "low-poly rock."
  *
- * Deliberately NOT part of lib/cutStages.ts's CUT_STAGES sequence — that
- * file (and everything Beat 3 onward derives from it, including Beat 5's
- * FACET_ANCHOR_LOCAL) is untouched by this one. HeroStone.tsx shows this
- * geometry only while progress is before the Cut beat, and swaps to
- * CUT_STAGES[0] the instant Cut begins, so Beat 3 onward renders exactly as
- * before this file existed.
+ * What this module ultimately exports is not a mesh but GEM_FACET_PLANES —
+ * the set of half-spaces the cut's facets bound. lib/cutStages.ts carves
+ * lib/rawStone.ts's natural specimen with those planes, so the finished gem
+ * is literally the rough with material removed, and every intermediate stage
+ * of Beat 3 is a real partial cut of the same stone. The mesh built below
+ * exists to derive those planes from a construction that can be read and
+ * checked, rather than from a hand-written list of numbers.
  *
  * ── The cut ────────────────────────────────────────────────────────────
  * Eight-fold symmetry, 57 facets, laid out as a real round brilliant:
@@ -36,6 +36,12 @@ import * as THREE from "three";
  * every group is a coherent optical family rather than a spray of
  * triangles, which is what lets light read as structure across the stone.
  */
+
+/**
+ * Final size of the cut, relative to the proportions below. See the note
+ * where it is applied in build().
+ */
+const CUT_SCALE = 0.78;
 
 /** Azimuthal symmetry — 8 mains, 16 break facets, 16 girdle segments. */
 const N = 8;
@@ -171,7 +177,12 @@ function build(): THREE.BufferGeometry {
 
   const geometry = new THREE.BufferGeometry();
   const positions = new Float32Array(tris.length * 3);
-  tris.forEach((v, i) => v.toArray(positions, i * 3));
+  // Scaled down as the last step, so every ratio above stays readable as the
+  // lapidary percentages they are while the finished stone still comes out
+  // meaningfully smaller than the rough it is cut from (lib/rawStone.ts).
+  // Cutting removes material; a finished gem the same size as its rough
+  // would be a lie the whole Cut beat is built on.
+  tris.forEach((v, i) => v.clone().multiplyScalar(CUT_SCALE).toArray(positions, i * 3));
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   // Non-indexed, so this is a per-face normal — paired with `flatShading` on
   // the material, each facet stays a crisp, separately-lit plane.
@@ -180,15 +191,72 @@ function build(): THREE.BufferGeometry {
   return geometry;
 }
 
-export const GEM_DISPLAY_GEOMETRY = build();
+/**
+ * The cut, expressed as the set of half-spaces its facets bound.
+ *
+ * This — not the mesh — is what the rest of the app consumes. A lapidary
+ * does not model a finished gem and swap it in; they remove material from a
+ * rough along a set of planes. lib/cutStages.ts does literally that: it
+ * carves lib/rawStone.ts's specimen by these planes, so the finished gem is
+ * the intersection of the rough with the cut, and every intermediate stage
+ * is a real partial cut of the same stone.
+ *
+ * Derived from the triangles built above rather than written out by hand, so
+ * the planes can never drift from the construction they came from. Each is
+ * stored as an outward unit normal plus its distance from the origin, which
+ * is all the radial carve needs: along a direction `u`, a plane limits the
+ * surface to `distance / (normal · u)` whenever `normal · u > 0`.
+ */
+export interface FacetPlane {
+  normal: THREE.Vector3;
+  distance: number;
+}
+
+function derivePlanes(geometry: THREE.BufferGeometry): FacetPlane[] {
+  const pos = geometry.attributes.position as THREE.BufferAttribute;
+  const planes: FacetPlane[] = [];
+  const a = new THREE.Vector3();
+  const b = new THREE.Vector3();
+  const c = new THREE.Vector3();
+  const ab = new THREE.Vector3();
+  const ac = new THREE.Vector3();
+  const normal = new THREE.Vector3();
+
+  for (let i = 0; i < pos.count; i += 3) {
+    a.fromBufferAttribute(pos, i);
+    b.fromBufferAttribute(pos, i + 1);
+    c.fromBufferAttribute(pos, i + 2);
+    normal.crossVectors(ab.subVectors(b, a), ac.subVectors(c, a));
+    if (normal.lengthSq() < 1e-12) continue; // degenerate, e.g. the culet fan
+    normal.normalize();
+    const distance = normal.dot(a);
+    if (distance <= 1e-6) continue; // faces through the origin cannot bound
+    const duplicate = planes.some(
+      (p) => p.normal.dot(normal) > 0.9995 && Math.abs(p.distance - distance) < 1e-4,
+    );
+    if (!duplicate) planes.push({ normal: normal.clone(), distance });
+  }
+  return planes;
+}
+
+const BUILT = build();
+
+export const GEM_FACET_PLANES = derivePlanes(BUILT);
+
+/** Girdle radius of the finished cut — the stone's widest point. */
+export const GEM_GIRDLE_RADIUS = R_GIRDLE * CUT_SCALE;
 
 /**
- * A point sitting on the crown, in local space — used by
- * components/canvas/LightPoint.tsx so the loader's point of light lands on
- * an actual facet instead of hovering in the air beside the stone.
+ * Distance from the centre to the furthest point of the finished cut (the
+ * girdle). lib/cutStages.ts checks the rough exceeds this in every
+ * direction, since a cut can only remove material.
  */
-export const GEM_CROWN_HIGHLIGHT_LOCAL = new THREE.Vector3(
-  Math.cos(HALF_STEP) * R_STAR,
-  Y_STAR,
-  Math.sin(HALF_STEP) * R_STAR,
-);
+export const GEM_MAX_EXTENT = (() => {
+  const pos = BUILT.attributes.position as THREE.BufferAttribute;
+  const v = new THREE.Vector3();
+  let max = 0;
+  for (let i = 0; i < pos.count; i++) {
+    max = Math.max(max, v.fromBufferAttribute(pos, i).length());
+  }
+  return max;
+})();

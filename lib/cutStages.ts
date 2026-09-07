@@ -1,196 +1,182 @@
 import * as THREE from "three";
+import { GEM_FACET_PLANES, GEM_MAX_EXTENT, type FacetPlane } from "./gemGeometry";
+import {
+  GEM_BASE_DIRECTIONS,
+  GEM_BASE_SPHERE,
+  RAW_MIN_RADIUS,
+  rawRadius,
+} from "./rawStone";
 
 /**
- * Procedural placeholder for the hero stone's 5-stage cut sequence (Beat 3 —
- * "The Cut"). MODELS.md's delivery format is a sequence of pre-authored
- * "cut stage" BufferGeometrys, NOT runtime CSG — CSG can't be scrubbed
- * against scroll position, since each stage would need to be solved live,
- * every frame, at whatever fractional cut the scrollbar happens to be at.
- * This generates that sequence by slicing a convex hull with planes, once,
- * at module load — never per frame — so what's actually scrubbed against
- * scroll is a discrete pick from N precomputed geometries (see
- * components/canvas/HeroStone.tsx), exactly like the real modeller-authored
- * stages will be swapped once they land.
+ * Beat 3, "The Cut" — the rough being cut into the finished gem.
  *
- * Each stage cumulatively slices more planes off the PREVIOUS stage's
- * result. Intersecting a convex polyhedron with a half-space always yields
- * another convex polyhedron — that's what makes the capping algorithm below
- * safe without a general polygon-with-holes triangulator: the cut boundary
- * for one plane through one convex shape is always a single simple loop, so
- * it can be closed by sorting its points by angle around their centroid.
+ * This is a real carve, not a crossfade between two models. Stage 0 IS
+ * lib/rawStone.ts's specimen; each later stage is that same specimen with
+ * more of lib/gemGeometry.ts's facet planes ground into it; the last stage
+ * is the finished brilliant. Because material only ever comes off, the beat
+ * says what the copy on screen says — "Nothing is added. Only what does not
+ * belong is taken away."
+ *
+ * How the carve works: both the rough and the cut are defined radially, so
+ * the stone's surface in a direction `u` is simply the NEAREST limit acting
+ * in that direction — the rough's own radius, or `d / (n · u)` for each
+ * facet plane facing that way. Taking the minimum carves the rough with the
+ * cut exactly, needs no polygon clipping, and — because every stage reuses
+ * one base sphere's vertices and UVs — produces stages with identical
+ * topology. That last part is what makes the sequence scrub cleanly: moving
+ * between stages moves the surface, and cannot pop the mesh.
+ *
+ * The planes are ground in group by group, in the order a cutter actually
+ * works: table first, then the crown, then the girdle, then the pavilion.
+ * Within a group each plane sweeps inward from outside the stone to its
+ * final depth, so a facet visibly grows rather than appearing whole.
  */
 
-const EPS = 1e-6;
+/** Stage 0 is the untouched rough; the rest carve progressively. */
+const STAGE_COUNT = 9;
 
-/** Cuts away the side of `geometry` where distanceToPoint(v) > 0, capping the resulting hole. */
-function cutConvexGeometry(
-  geometry: THREE.BufferGeometry,
-  plane: THREE.Plane,
-): THREE.BufferGeometry {
-  const pos = geometry.attributes.position as THREE.BufferAttribute;
-  const keptTriangles: THREE.Vector3[] = [];
-  const boundaryPoints: THREE.Vector3[] = [];
+/** A plane this far out clears the rough entirely, so it removes nothing. */
+const INACTIVE_DISTANCE = 10;
 
-  function distanceOf(v: THREE.Vector3) {
-    return plane.distanceToPoint(v);
+/**
+ * The cut has to fit inside the rough — a cutter cannot add material. This
+ * is the check for that, run once at module load rather than assumed: the
+ * finished gem's furthest point must sit inside the rough's tightest
+ * direction. If a future edit to either shape breaks it, this fails loudly
+ * here instead of silently rendering a gem poking out through its own rough.
+ */
+if (RAW_MIN_RADIUS <= GEM_MAX_EXTENT) {
+  throw new Error(
+    `Cut does not fit inside the rough: rough min radius ${RAW_MIN_RADIUS.toFixed(3)} <= cut extent ${GEM_MAX_EXTENT.toFixed(3)}. Raise RAW_SCALE in lib/rawStone.ts.`,
+  );
+}
+
+/**
+ * Facet groups in cutting order. Classified by how far each plane's normal
+ * tilts from vertical, which is exactly what distinguishes the groups on a
+ * brilliant: the table faces straight up, crown facets tilt up and out,
+ * girdle facets face outward, pavilion facets tilt down and out.
+ */
+const GROUPS: FacetPlane[][] = (() => {
+  const table: FacetPlane[] = [];
+  const crown: FacetPlane[] = [];
+  const girdle: FacetPlane[] = [];
+  const pavilion: FacetPlane[] = [];
+  for (const p of GEM_FACET_PLANES) {
+    const ny = p.normal.y;
+    if (ny > 0.95) table.push(p);
+    else if (ny > 0.2) crown.push(p);
+    else if (ny > -0.2) girdle.push(p);
+    else pavilion.push(p);
   }
+  return [table, crown, girdle, pavilion];
+})();
 
-  // Sutherland-Hodgman clip of one triangle against the plane, keeping the
-  // side where distance <= 0. A triangle clipped by one plane yields 0, 1
-  // (unclipped), or a convex tri/quad — never more than 4 points.
-  function clipTriangle(p0: THREE.Vector3, p1: THREE.Vector3, p2: THREE.Vector3) {
-    const pts = [p0, p1, p2];
-    const dist = pts.map(distanceOf);
-    const inside = dist.map((d) => d <= EPS);
-
-    if (inside.every(Boolean)) {
-      keptTriangles.push(p0.clone(), p1.clone(), p2.clone());
-      return;
+/**
+ * Effective distance of every plane at a given overall cut progress. Each
+ * group owns an equal slice of the progression and eases in across it; a
+ * group that has not started yet sits at INACTIVE_DISTANCE and does nothing.
+ */
+function planeDistancesAt(progress: number): number[] {
+  const span = 1 / GROUPS.length;
+  const distances: number[] = [];
+  GROUPS.forEach((group, groupIndex) => {
+    const local = THREE.MathUtils.clamp((progress - groupIndex * span) / span, 0, 1);
+    const eased = THREE.MathUtils.smoothstep(local, 0, 1);
+    for (const plane of group) {
+      distances.push(THREE.MathUtils.lerp(INACTIVE_DISTANCE, plane.distance, eased));
     }
-    if (inside.every((v) => !v)) return; // fully on the removed side
+  });
+  return distances;
+}
 
-    const outPoly: THREE.Vector3[] = [];
-    for (let i = 0; i < 3; i++) {
-      const cur = pts[i];
-      const next = pts[(i + 1) % 3];
-      const curIn = inside[i];
-      const nextIn = inside[(i + 1) % 3];
+/** Planes flattened into the same order planeDistancesAt returns. */
+const ORDERED_PLANES: FacetPlane[] = GROUPS.flat();
 
-      if (curIn) outPoly.push(cur.clone());
-      if (curIn !== nextIn) {
-        const dCur = dist[i];
-        const dNext = dist[(i + 1) % 3];
-        const t = dCur / (dCur - dNext);
-        const ip = cur.clone().lerp(next, t);
-        outPoly.push(ip);
-        boundaryPoints.push(ip.clone());
+/**
+ * Builds one stage. Returns a non-indexed geometry whose normals are
+ * per-facet where the surface has been cut and smooth where it is still
+ * rough — so a half-cut stone reads correctly as both at once, crisp facets
+ * meeting an unworked natural surface, rather than being uniformly faceted
+ * (which would make the rough look low-poly) or uniformly smooth (which
+ * would round off the facets the beat exists to show).
+ */
+function buildStage(progress: number): THREE.BufferGeometry {
+  const distances = planeDistancesAt(progress);
+
+  const indexed = GEM_BASE_SPHERE.clone();
+  const pos = indexed.attributes.position as THREE.BufferAttribute;
+  // Which plane ended up limiting each vertex, or -1 if the vertex is still
+  // on unworked rough. This is the key to shading the result correctly —
+  // see below.
+  const carvedBy: number[] = new Array(pos.count);
+
+  for (let i = 0; i < pos.count; i++) {
+    const dir = GEM_BASE_DIRECTIONS[i];
+    let radius = rawRadius(dir);
+    let limitedBy = -1;
+
+    for (let p = 0; p < ORDERED_PLANES.length; p++) {
+      const facing = ORDERED_PLANES[p].normal.dot(dir);
+      if (facing <= 1e-4) continue; // plane faces away; cannot limit this ray
+      const limit = distances[p] / facing;
+      if (limit < radius) {
+        radius = limit;
+        limitedBy = p;
       }
     }
-    for (let i = 1; i < outPoly.length - 1; i++) {
-      keptTriangles.push(outPoly[0], outPoly[i], outPoly[i + 1]);
-    }
+
+    carvedBy[i] = limitedBy;
+    pos.setXYZ(i, dir.x * radius, dir.y * radius, dir.z * radius);
   }
+  pos.needsUpdate = true;
+  // Smooth normals first — these are the ones the still-rough regions keep.
+  indexed.computeVertexNormals();
 
-  const a = new THREE.Vector3();
-  const b = new THREE.Vector3();
-  const c = new THREE.Vector3();
-  for (let i = 0; i < pos.count; i += 3) {
-    a.fromBufferAttribute(pos, i);
-    b.fromBufferAttribute(pos, i + 1);
-    c.fromBufferAttribute(pos, i + 2);
-    clipTriangle(a, b, c);
+  const geometry = indexed.toNonIndexed();
+  const gNormal = geometry.attributes.normal as THREE.BufferAttribute;
+  const index = indexed.getIndex()!;
+
+  for (let v = 0; v < gNormal.count; v++) {
+    // A vertex that a plane cut is, by definition, lying ON that plane — so
+    // the plane's own normal IS its surface normal, exactly. Reading it
+    // straight off the plane beats deriving a face normal by cross product:
+    // it is exact, it costs nothing, and crucially it does not degenerate.
+    // The cross-product version produced a white starburst wherever the UV
+    // sphere's poles landed, because the sliver triangles that converge
+    // there have near-zero area and so yield a garbage direction — and the
+    // poles sit on the table and the culet, the two places the eye goes.
+    // Every vertex on one facet now gets one identical normal, which is
+    // also what makes the facet read as genuinely flat.
+    const plane = carvedBy[index.getX(v)];
+    if (plane < 0) continue; // untouched rough keeps its smooth normal
+    const n = ORDERED_PLANES[plane].normal;
+    gNormal.setXYZ(v, n.x, n.y, n.z);
   }
+  gNormal.needsUpdate = true;
 
-  // Cap the hole. Dedupe near-identical crossing points (shared triangle
-  // edges produce the same intersection point twice), then order the
-  // remaining single loop by angle around its centroid in the plane's own
-  // 2D basis (u, v, normal — right-handed, so increasing angle is
-  // counter-clockwise as seen from the +normal side) and fan-triangulate.
-  const unique: THREE.Vector3[] = [];
-  for (const p of boundaryPoints) {
-    if (!unique.some((u) => u.distanceToSquared(p) < 1e-8)) unique.push(p);
-  }
-
-  if (unique.length >= 3) {
-    const centroid = unique
-      .reduce((sum, p) => sum.add(p), new THREE.Vector3())
-      .divideScalar(unique.length);
-    const normal = plane.normal;
-    const u = new THREE.Vector3()
-      .crossVectors(
-        normal,
-        Math.abs(normal.y) < 0.9 ? new THREE.Vector3(0, 1, 0) : new THREE.Vector3(1, 0, 0),
-      )
-      .normalize();
-    const v = new THREE.Vector3().crossVectors(normal, u);
-
-    unique.sort((p1, p2) => {
-      const d1 = p1.clone().sub(centroid);
-      const d2 = p2.clone().sub(centroid);
-      return Math.atan2(v.dot(d1), u.dot(d1)) - Math.atan2(v.dot(d2), u.dot(d2));
-    });
-
-    // (centroid, p[i], p[i+1]) in increasing-angle order winds
-    // counter-clockwise as seen from +normal, so its face normal points
-    // along +normal — outward, away from the kept (negative-distance) side.
-    for (let i = 0; i < unique.length; i++) {
-      const p1 = unique[i];
-      const p2 = unique[(i + 1) % unique.length];
-      keptTriangles.push(centroid.clone(), p1.clone(), p2.clone());
-    }
-  }
-
-  const out = new THREE.BufferGeometry();
-  const flat = new Float32Array(keptTriangles.length * 3);
-  keptTriangles.forEach((p, i) => p.toArray(flat, i * 3));
-  out.setAttribute("position", new THREE.BufferAttribute(flat, 3));
-  out.computeVertexNormals();
-  return out;
+  indexed.dispose();
+  geometry.computeBoundingSphere();
+  return geometry;
 }
 
-function plane(normal: [number, number, number], constant: number): THREE.Plane {
-  return new THREE.Plane(new THREE.Vector3(...normal).normalize(), constant);
-}
-
-// Cumulative cut plan per stage, applied to the running geometry in order.
-// A plane (n, k) removes everything where n·v + k > 0, so k is roughly
-// "how far out the cut sits" — smaller |k| cuts deeper.
-const STAGE_PLANES: THREE.Plane[][] = [
-  [], // stage 0: rough hull — the base icosahedron, uncut
-  [plane([0, 1, 0], -0.62)], // stage 1: table facet — one flat cut at the top
-  [
-    // stage 2: crown facets — four bevels around the upper hemisphere
-    plane([0.55, 0.7, 0], -0.58),
-    plane([-0.55, 0.7, 0], -0.58),
-    plane([0, 0.7, 0.55], -0.58),
-    plane([0, 0.7, -0.55], -0.58),
-  ],
-  [
-    // stage 3: pavilion facets — four bevels around the lower hemisphere,
-    // offset in azimuth from the crown cuts so the two sets read as distinct
-    plane([0.6, -0.65, 0.2], -0.55),
-    plane([-0.6, -0.65, 0.2], -0.55),
-    plane([0.2, -0.65, -0.6], -0.55),
-    plane([-0.2, -0.65, -0.6], -0.55),
-  ],
-  [
-    // stage 4: final polish — shallow girdle bevels, rounding the last sharp
-    // edges. Diagonal (not axis-aligned) normals: a unit icosahedron's
-    // vertices never exceed |x|=0.85 on any single axis, so axis-aligned
-    // planes at this depth would never actually intersect the hull.
-    plane([1, 0, 1], -0.86),
-    plane([-1, 0, 1], -0.86),
-    plane([1, 0, -1], -0.86),
-    plane([-1, 0, -1], -0.86),
-  ],
-];
-
-function buildStages(): THREE.BufferGeometry[] {
-  const base = new THREE.IcosahedronGeometry(1, 0).toNonIndexed();
-  const stages: THREE.BufferGeometry[] = [base];
-  let current: THREE.BufferGeometry = base;
-  for (let s = 1; s < STAGE_PLANES.length; s++) {
-    for (const p of STAGE_PLANES[s]) {
-      current = cutConvexGeometry(current, p);
-    }
-    stages.push(current);
-  }
-  return stages;
-}
-
-export const CUT_STAGES = buildStages();
+export const CUT_STAGES: THREE.BufferGeometry[] = Array.from(
+  { length: STAGE_COUNT },
+  (_, i) => buildStage(i / (STAGE_COUNT - 1)),
+);
 export const CUT_STAGE_COUNT = CUT_STAGES.length;
 
+/** The finished gem — the last stage, i.e. the fully carved stone. */
+export const FINISHED_GEM_GEOMETRY = CUT_STAGES[CUT_STAGE_COUNT - 1];
+
 /**
- * A stable "facet edge" point on the final (most-cut) stage — its topmost
- * vertex — used by HeroStone.tsx as the world-space anchor for Beat 5's
- * hairline gold rule (components/dom/beats/Beat5Object.tsx). Computed once
- * here rather than picked arbitrarily in HeroStone.tsx, since it depends on
- * the actual generated geometry, not just an assumption about its shape.
+ * A stable "facet edge" point on the finished gem — its topmost vertex, i.e.
+ * the table — used by HeroStone.tsx as the world-space anchor for Beat 5's
+ * hairline gold rule (components/dom/beats/Beat5Object.tsx). Computed from
+ * the actual generated geometry rather than assumed.
  */
 export const FACET_ANCHOR_LOCAL = (() => {
-  const final = CUT_STAGES[CUT_STAGES.length - 1];
-  const pos = final.attributes.position as THREE.BufferAttribute;
+  const pos = FINISHED_GEM_GEOMETRY.attributes.position as THREE.BufferAttribute;
   const best = new THREE.Vector3(0, -Infinity, 0);
   const v = new THREE.Vector3();
   for (let i = 0; i < pos.count; i++) {

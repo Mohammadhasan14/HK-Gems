@@ -13,8 +13,6 @@ import { BEATS } from "./beats";
  * in `t` correspond to equal *distance* traveled, keeping perceived speed
  * consistent regardless of how unevenly the waypoints below are spaced.
  *
- * This is a Phase 0 placeholder path — enough to prove the single-curve
- * architecture end to end.
  *
  * Camera pacing note: getPointAt is uniform-arclength BY DEFINITION — equal
  * steps in the input t always cover equal *distance*, everywhere on the
@@ -22,44 +20,45 @@ import { BEATS } from "./beats";
  * alone can never make the camera "hold still" for a stretch of scroll (a
  * genuinely zero-length cluster of waypoints would only compress that hold
  * into a vanishingly small slice of t, i.e. a snap, not a dwell). The "cut"
- * beat's hold-then-push-into-the-hull choreography is instead authored by
- * warpProgress() below, which reshapes how progress maps to t only inside
- * that beat's own range — the curve's waypoints stay a uniform-speed path
- * end to end; what changes is how much of the beat's scroll is spent on
- * which fraction of that path.
- *
- * Near-plane note (failure mode #4 from the brief: mesh clipping at the end
- * of the page): waypoint 10 (collection end) is deliberately pulled far back
- * from any geometry, and the Canvas camera `near` is set very small
- * (see components/canvas/CanvasRoot.tsx) so waypoint 5 — which intentionally
- * sits *inside* the hero stone's bounding radius for the "enter the hull"
- * moment — doesn't clip.
+ * beat's hold-then-push choreography is instead authored by warpProgress()
+ * below, which reshapes how progress maps to t only inside that beat's own
+ * range — the curve's waypoints stay a uniform-speed path end to end; what
+ * changes is how much of the beat's scroll is spent on which fraction of
+ * that path.
  */
 
 // prettier-ignore
 const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
-  // Waypoints 0-1 are the hero framing. Pulled in from the original 5.6/3.6
-  // so the stone fills ~45% of frame height instead of ~33%: a subject, not
-  // an ornament floating in a void. The target waypoints below sit LEFT of
-  // and BELOW the stone's centre, which throws it right-of-frame and a
-  // little high — the classic editorial arrangement, leaving the left third
-  // clear for the headline column.
-  // Elevation matters as much as distance here: at y 0.55 the camera sat
-  // only ~11 deg above the stone, so the crown — which tilts 34 deg up —
-  // faced away from both the key light and the bright half of the
-  // environment, and every crown facet rendered the same flat black. Lifting
-  // to ~19 deg is the angle gem photography actually shoots a brilliant
-  // from, and it lets each crown facet take a different value so the cut
-  // reads as structure.
-  new THREE.Vector3(0.35, 1.15, 4.05), // 0  arrival start — elevated establishing shot
-  new THREE.Vector3(0.72, 0.5, 3.1),   // 1  arrival end / origin start — closer, intimate, off-centre
-  new THREE.Vector3(-0.8, -0.6, 3.8),  // 2  origin end / inhale start — descended past strata
-  new THREE.Vector3(0.0, -0.1, 2.4),   // 3  inhale end / cut start — dust converges, camera re-centres
-  new THREE.Vector3(0.0,  0.0, 1.6),   // 4  cut hold — camera dead-still while facets are cut (Phase 2 densifies this)
-  new THREE.Vector3(0.0,  0.05, 0.15), // 5  cut end — inside the hull; near plane must be tiny here
-  new THREE.Vector3(0.0,  0.2, 3.2),   // 6  tolerance end / object start — pulled back to the exploded diagram
-  new THREE.Vector3(1.5,  0.3, 2.8),   // 7  object end / worn start — slow orbit around the finished ring
-  new THREE.Vector3(0.0,  1.5, 4.5),   // 8  worn end / collection start — pulling back as the frame overexposes
+  // Waypoints 0-4 frame the ROUGH, which is markedly bigger than the finished
+  // gem (lib/rawStone.ts's RAW_SCALE against lib/gemGeometry.ts's CUT_SCALE)
+  // because cutting removes material, so they sit further out; 6-10 frame the
+  // finished gem and sit closer. That difference is the point rather than an
+  // inconsistency: the camera holds the SUBJECT at a roughly constant size in
+  // frame while the stone itself gets smaller, which is what sells the cut as
+  // having taken something away.
+  //
+  // Two things are load-bearing about the hero pair specifically. The targets
+  // below sit LEFT of and BELOW the stone's centre, throwing it right-of-frame
+  // and a little high, which leaves the left third clear for the headline
+  // column. And the ELEVATION matters as much as the distance: too low and the
+  // crown faces away from both the key light and the bright half of the
+  // environment, so every crown facet renders the same value and the cut stops
+  // reading as structure.
+  new THREE.Vector3(0.55, 1.85, 6.5),  // 0  arrival start — elevated establishing shot
+  new THREE.Vector3(1.15, 0.8, 5.6),   // 1  arrival end / origin start — closer, intimate, off-centre
+  new THREE.Vector3(-1.5, -1.0, 6.6),  // 2  origin end / inhale start — descended past strata
+  new THREE.Vector3(0.0, -0.15, 5.2),  // 3  inhale end / cut start — dust converges, camera re-centres
+  new THREE.Vector3(0.5, 0.55, 5.0),   // 4  cut hold — held off one shoulder while facets are ground in
+  // 5 cut end — a MACRO on the finished crown, deliberately still outside the
+  // stone. The camera used to push inside the hull here, which worked when
+  // the stone was clear quartz and reading its interior was the point; with
+  // an opaque turquoise there is nothing to see in there but backfaces, and
+  // it read as a rendering fault rather than a reveal. Close enough that the
+  // facets fill the frame is the version of that shot that still lands.
+  new THREE.Vector3(0.8, 0.45, 2.3),
+  new THREE.Vector3(0.0,  0.2, 2.7),   // 6  tolerance end / object start — pulled back to the exploded diagram
+  new THREE.Vector3(1.3,  0.28, 2.4),  // 7  object end / worn start — slow orbit around the finished ring
+  new THREE.Vector3(0.0,  1.3, 3.9),   // 8  worn end / collection start — pulling back as the frame overexposes
   new THREE.Vector3(2.5,  2.0, 3.0),   // 9  collection mid — vitrine turntable, seen from slightly above
   new THREE.Vector3(0.0,  1.8, 7.5),   // 10 collection end — wide again, closing the loop back toward arrival
 ];
@@ -101,16 +100,15 @@ export const CURVE_WAYPOINT_COUNT = CAMERA_POSITION_WAYPOINTS.length;
 const CUT = BEATS.find((b) => b.id === "cut")!;
 
 /**
- * Where the camera path actually dips inside the hero stone's hull. This is
- * a MID-curve minimum, not an endpoint: sampling confirms the closest
- * approach to the origin lands around the midpoint of the Cut beat's own t
- * range, with the remainder of Cut already spent swinging back out toward
- * Tolerance's waypoint — that return glide is part of the original curve
+ * Where the camera path makes its closest approach to the stone during the
+ * Cut — the macro shot the beat pushes toward. A MID-curve minimum, not an
+ * endpoint: the remainder of Cut is already spent swinging back out toward
+ * Tolerance's waypoint, and that return glide is part of the curve's own
  * shape, not something warpProgress needs to touch. Computed once at module
  * load (500 samples is trivial) rather than hardcoded, so it stays correct
  * if the waypoints above are ever retuned.
  */
-const HULL_ENTRY_T = (() => {
+const CLOSEST_APPROACH_T = (() => {
   const SAMPLES = 500;
   const p = new THREE.Vector3();
   let bestT = CUT.start;
@@ -126,12 +124,12 @@ const HULL_ENTRY_T = (() => {
   }
   return bestT;
 })();
-const DIP_LOCAL = (HULL_ENTRY_T - CUT.start) / (CUT.end - CUT.start);
+const DIP_LOCAL = (CLOSEST_APPROACH_T - CUT.start) / (CUT.end - CUT.start);
 
-// Fraction of the *approach* sub-phase (cut-start -> hull-entry, i.e. local
+// Fraction of the *approach* sub-phase (cut-start -> closest-approach, i.e. local
 // progress 0..DIP_LOCAL) spent "holding" before pushing toward the hull.
 const HOLD_FRACTION = 0.62;
-// Fraction of the curve distance between cut-start and hull-entry covered
+// Fraction of the curve distance between cut-start and closest-approach covered
 // during that hold — small on purpose, so the push reads as a clear rush.
 const HOLD_COVERAGE = 0.1;
 
@@ -142,10 +140,10 @@ const HOLD_COVERAGE = 0.1;
  * beat). Two sub-phases inside Cut:
  *   - approach (local 0..DIP_LOCAL): hold for HOLD_FRACTION of this
  *     sub-range while covering only HOLD_COVERAGE of the cut-start ->
- *     hull-entry distance, then rush the remainder — see the pacing note
+ *     closest-approach distance, then rush the remainder — see the pacing note
  *     above cameraPositionCurve for why this needs a t-remap at all.
  *   - recovery (local DIP_LOCAL..1): identity/proportional pass-through
- *     onto the hull-entry -> cut-end range — the swing back out is already
+ *     onto the closest-approach -> cut-end range — the swing back out is already
  *     paced correctly by the raw curve, nothing to warp there.
  */
 export function warpProgress(progress: number): number {
@@ -160,9 +158,9 @@ export function warpProgress(progress: number): number {
         ? HOLD_COVERAGE * (subLocal / HOLD_FRACTION)
         : HOLD_COVERAGE +
           (1 - HOLD_COVERAGE) * ((subLocal - HOLD_FRACTION) / (1 - HOLD_FRACTION));
-    return CUT.start + mappedSubLocal * (HULL_ENTRY_T - CUT.start);
+    return CUT.start + mappedSubLocal * (CLOSEST_APPROACH_T - CUT.start);
   }
 
   const subLocal2 = (local - DIP_LOCAL) / (1 - DIP_LOCAL);
-  return HULL_ENTRY_T + subLocal2 * (CUT.end - HULL_ENTRY_T);
+  return CLOSEST_APPROACH_T + subLocal2 * (CUT.end - CLOSEST_APPROACH_T);
 }

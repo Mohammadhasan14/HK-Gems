@@ -85,39 +85,38 @@ export function Scene() {
           scene" setup. Ambient is kept LOW on purpose — flat fill is what
           flattens facets into one grey shape; the contrast between a lit
           facet and its dark neighbour is the entire read of a cut stone. */}
-      <ambientLight intensity={0.22} />
+      {/* Ambient carries real weight now that the stone is OPAQUE turquoise
+          rather than clear: its colour has to survive into the shadow side,
+          or the blue-green only exists where the key happens to land and the
+          rest of the stone reads as a grey rock. Still low enough that facet
+          contrast — the whole read of a cut stone — is preserved. */}
+      <ambientLight intensity={0.34} />
       {/* KEY — warm, high, tight. Everything else is measured against it. */}
       <spotLight
         position={KEY_LIGHT_POSITION}
-        angle={0.42}
-        penumbra={0.75}
-        intensity={250}
+        angle={0.5}
+        penumbra={0.8}
+        intensity={230}
         color="#fff2dc"
         castShadow
       />
-      {/* FILL — cool and soft from the opposite side, low enough that it only
-          keeps the shadow side from going fully black. Bounce, not a light. */}
-      <directionalLight
-        position={[-5, 1.5, 3]}
-        intensity={0.5}
-        color="#b9c6d8"
-      />
+      {/* FILL — cool and soft from the opposite side, keeping the shadow side
+          from going dead while staying clearly subordinate to the key. */}
+      <directionalLight position={[-5, 1.5, 3]} intensity={0.9} color="#b9c6d8" />
       {/* RIM — warm gold kicker behind and opposite the key. Separates the
-          stone's silhouette and facet edges from the ground rather than
-          relying on ambient, and ties the highlight to the brand's own gold
-          instead of a generic cool product-render kicker. */}
-      <pointLight position={[-3.0, 1.0, -3.2]} intensity={48} color="#d9b877" />
-      {/* BOUNCE — warm uplight from the ground pool's height. This is the
-          underlighting a gem photographer puts beneath a transparent stone:
-          a clear gem transmits whatever is under it, so with nothing there
-          the table and crown read as solid black no matter how hard the key
-          is pushed. Light entering the pavilion travels up and out through
-          the crown, which is what actually makes the stone look lit from
-          within rather than like polished onyx. */}
-      <pointLight position={[0.3, -2.2, 1.2]} intensity={75} color="#d8ab72" />
+          stone's silhouette from the ground, and ties the highlight to the
+          brand's own gold rather than a generic cool product-render kicker.
+          It also lights the host-rock matrix, which is the warmest thing on
+          the stone and the detail the whole material identity rests on. */}
+      <pointLight position={[-3.0, 1.0, -3.2]} intensity={55} color="#d9b877" />
+      {/* BOUNCE — dim warm uplight standing in for light returning off the
+          floor, so the underside never reads as a solid black wedge. Far
+          weaker than it was for the old transparent stone, which needed to
+          be lit through from below to be visible at all. */}
+      <pointLight position={[0.3, -2.2, 1.2]} intensity={22} color="#c8a06a" />
       <Environment
         preset="studio"
-        environmentIntensity={1.5}
+        environmentIntensity={0.85}
         resolution={highTier ? 256 : 32}
       />
       {/* Beats 1-2 only — fades itself out before Cut, see the component. */}
