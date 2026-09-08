@@ -8,7 +8,7 @@ import { QualityController } from "./QualityController";
 import { Header } from "./Header";
 import { StoryNav } from "./StoryNav";
 import { ScrollProgress } from "./ScrollProgress";
-import { ScrollCue } from "./ScrollCue";
+import { HeroFooter } from "./HeroFooter";
 import { Loader } from "./Loader";
 import { WornExposure } from "./WornExposure";
 
@@ -27,7 +27,7 @@ export function SiteShell({ children }: { children: ReactNode }) {
       <Header />
       <StoryNav />
       <ScrollProgress />
-      <ScrollCue />
+      <HeroFooter />
       <main className="relative z-0">{children}</main>
       <Loader />
       <DevHud />

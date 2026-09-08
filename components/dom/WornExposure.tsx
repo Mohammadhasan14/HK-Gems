@@ -1,29 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { BEATS } from "@/lib/beats";
 import { useScroll } from "@/store/useScroll";
-
-const WORN = BEATS.find((b) => b.id === "worn")!;
-const COLLECTION = BEATS.find((b) => b.id === "collection")!;
-// How much of Collection's own range the wash takes to fade back out —
-// small, so it clears quickly and doesn't eat into the turntable beat.
-const FADE_OUT_SPAN = (COLLECTION.end - COLLECTION.start) * 0.08;
-
-function exposureOpacity(progress: number): number {
-  if (progress <= WORN.start) return 0;
-  if (progress < WORN.end) {
-    // Reaches full exposure a little before the beat's own end, so the CTA
-    // at the bottom of the beat reads against the fully blown-out wash
-    // rather than mid-transition.
-    return Math.min(1, (progress - WORN.start) / (WORN.end - WORN.start) / 0.85);
-  }
-  // Past Worn: stays fully exposed through the boundary, then fades back
-  // out across the start of Collection so its near-black background (and
-  // white-on-dark placards) can return — without this, the wash never
-  // clears and Collection's text is invisible against it.
-  return Math.max(0, 1 - (progress - WORN.end) / FADE_OUT_SPAN);
-}
+import { exposureOpacity } from "@/lib/worn";
 
 /**
  * Beat 6's "the 3D exits by overexposing to warm white" — a fixed

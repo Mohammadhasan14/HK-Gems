@@ -56,8 +56,8 @@ const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
   // it read as a rendering fault rather than a reveal. Close enough that the
   // facets fill the frame is the version of that shot that still lands.
   new THREE.Vector3(0.8, 0.45, 2.3),
-  new THREE.Vector3(0.0,  0.2, 2.7),   // 6  tolerance end / object start — pulled back to the exploded diagram
-  new THREE.Vector3(1.3,  0.28, 2.4),  // 7  object end / worn start — slow orbit around the finished ring
+  new THREE.Vector3(0.0,  0.2, 3.2),   // 6  tolerance end / object start — pulled back to the exploded diagram
+  new THREE.Vector3(1.5,  0.28, 2.9),  // 7  object end / worn start — slow orbit around the finished ring
   new THREE.Vector3(0.0,  1.3, 3.9),   // 8  worn end / collection start — pulling back as the frame overexposes
   new THREE.Vector3(2.5,  2.0, 3.0),   // 9  collection mid — vitrine turntable, seen from slightly above
   new THREE.Vector3(0.0,  1.8, 7.5),   // 10 collection end — wide again, closing the loop back toward arrival
@@ -65,20 +65,32 @@ const CAMERA_POSITION_WAYPOINTS: THREE.Vector3[] = [
 
 // prettier-ignore
 const CAMERA_TARGET_WAYPOINTS: THREE.Vector3[] = [
-  // The brilliant's mass hangs below its girdle, so its visual centre is
-  // ~y -0.28, not 0. Aiming a little under that lifts the stone above the
-  // frame's midline rather than letting it sit low and bottom-heavy.
+  // Every target sits LEFT of the stone's centre, which throws the stone
+  // right-of-frame and leaves the left column clear for the copy — the same
+  // arrangement components/dom/BeatSection.tsx lays the type out on. This
+  // used to apply only to the opening two waypoints; from waypoint 3 the
+  // camera aimed dead centre, which put the stone directly underneath the
+  // headline for every scene from The Cut onward.
+  //
+  // It relaxes to zero at 9-10 because the Collection beat composes itself
+  // differently: its turntable is already offset right in
+  // components/canvas/Vitrine.tsx, and aiming left as well would carry it
+  // off the edge of the frame.
+  //
+  // The y values aim a little under each shape's true centre: the stone's
+  // mass hangs below its girdle, so aiming at the geometric origin sits it
+  // low and bottom-heavy in frame.
   new THREE.Vector3(-0.60, -0.12, 0), // 0
   new THREE.Vector3(-0.44, -0.16, 0), // 1
-  new THREE.Vector3(-0.1, -0.1, 0),   // 2
-  new THREE.Vector3(0.0, 0.0, 0),   // 3
-  new THREE.Vector3(0.0, 0.0, 0),   // 4
-  new THREE.Vector3(0.0, 0.0, 0),   // 5
-  new THREE.Vector3(0.0, -0.1, 0),  // 6
-  new THREE.Vector3(0.0, 0.0, 0),   // 7
-  new THREE.Vector3(0.0, 0.2, 0),   // 8
-  new THREE.Vector3(0.0, 0.4, 0),   // 9
-  new THREE.Vector3(0.0, 0.3, 0),   // 10
+  new THREE.Vector3(-0.35, -0.10, 0), // 2
+  new THREE.Vector3(-0.45, 0.0, 0),   // 3
+  new THREE.Vector3(-0.45, 0.0, 0),   // 4
+  new THREE.Vector3(-0.45, 0.0, 0),   // 5
+  new THREE.Vector3(-0.50, -0.1, 0),  // 6
+  new THREE.Vector3(-0.50, 0.0, 0),   // 7
+  new THREE.Vector3(-0.35, 0.2, 0),   // 8
+  new THREE.Vector3(0.0, 0.4, 0),     // 9
+  new THREE.Vector3(0.0, 0.3, 0),     // 10
 ];
 
 export const cameraPositionCurve = new THREE.CatmullRomCurve3(

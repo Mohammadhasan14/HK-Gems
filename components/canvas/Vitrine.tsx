@@ -13,7 +13,13 @@ import { getGemTextures } from "@/lib/gemTextures";
 const WORN = BEATS.find((b) => b.id === "worn")!;
 const COLLECTION = BEATS.find((b) => b.id === "collection")!;
 
-const RADIUS = 3.2;
+// Ring radius, and how far right the whole turntable is offset. Tuned
+// together against the rendered frame: the ring has to clear the copy column
+// on its left AND stay inside the frame on its right, and only the pair
+// satisfies both. A wider ring pushed far enough right to clear the headline
+// ran its far side off the edge of the screen.
+const RADIUS = 2.8;
+const OFFSET_X = 2.6;
 const TOTAL_TURNS = 1.4;
 
 /** Each piece shows the house cut, at the scale a set stone would be. */
@@ -81,7 +87,11 @@ export function Vitrine() {
   });
 
   return (
-    <group ref={groupRef} position={[0, 1.2, 0]}>
+    // Offset right, not centred on the origin. Every scene in the site keeps
+    // its left column clear for copy (components/dom/BeatSection.tsx); a
+    // turntable centred on the origin swings its stones straight across that
+    // column and put half the collection's names behind geometry.
+    <group ref={groupRef} position={[OFFSET_X, 1.2, 0]}>
       {stones.map((stone, i) => (
         <group
           key={stone.id}

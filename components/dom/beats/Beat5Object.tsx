@@ -4,11 +4,14 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { BeatSection } from "../BeatSection";
+import { BeatCopy } from "../BeatCopy";
+import { chapterForBeat } from "@/lib/journey";
 import { HERO_STONE } from "@/lib/stones";
 import { BEATS } from "@/lib/beats";
 import { useScroll } from "@/store/useScroll";
 import { facetAnchor } from "@/lib/facetAnchor";
 
+const CHAPTER = chapterForBeat("object");
 const OBJECT = BEATS.find((b) => b.id === "object")!;
 
 const SPEC_ROWS: Array<[string, string]> = [
@@ -20,7 +23,7 @@ const SPEC_ROWS: Array<[string, string]> = [
 ];
 
 /**
- * Beat 5 — The Object. Rows resolve one at a time (masked-opacity reveal
+ * Beat 5 — The Ring. Rows resolve one at a time (masked-opacity reveal
  * scrubbed via GSAP ScrollTrigger, same convention as Beat2Origin) against a
  * hairline gold rule projected from a facet edge of the hero stone
  * (lib/facetAnchor.ts, written every frame by HeroStone.tsx) to whichever
@@ -67,7 +70,7 @@ export function Beat5Object() {
           const rect = rowEl.getBoundingClientRect();
           line.setAttribute("x1", String(facetAnchor.screenX));
           line.setAttribute("y1", String(facetAnchor.screenY));
-          line.setAttribute("x2", String(rect.left));
+          line.setAttribute("x2", String(rect.right));
           line.setAttribute("y2", String(rect.top + rect.height / 2));
           line.style.opacity = "0.7";
         }
@@ -81,7 +84,7 @@ export function Beat5Object() {
   }, []);
 
   return (
-    <BeatSection id="object">
+    <BeatSection id="object" align="top">
       <svg className="pointer-events-none fixed inset-0 z-30 h-full w-full" aria-hidden="true">
         <line
           ref={lineRef}
@@ -90,26 +93,28 @@ export function Beat5Object() {
           style={{ opacity: 0, transition: "opacity 0.3s" }}
         />
       </svg>
-      <p className="font-sans text-[10px] uppercase tracking-[0.2em] text-white/40">
-        {HERO_STONE.name}
-      </p>
-      <p dir="rtl" lang="ur" className="mt-1 font-display text-lg text-white/50">
-        {HERO_STONE.urduName}
-      </p>
-      <dl className="mt-8 max-w-sm space-y-2 font-sans text-xs uppercase tracking-[0.15em] text-white/70">
-        {SPEC_ROWS.map(([label, value], i) => (
-          <div
-            key={label}
-            ref={(el) => {
-              rowRefs.current[i] = el;
-            }}
-            className="flex justify-between border-b border-white/10 pb-2"
-          >
-            <dt className="text-white/40">{label}</dt>
-            <dd>{value}</dd>
-          </div>
-        ))}
-      </dl>
+
+      <BeatCopy
+        eyebrow={CHAPTER.eyebrow}
+        roman={`${HERO_STONE.name},`}
+        italic="in sterling silver."
+        urdu={HERO_STONE.urduName}
+      >
+        <dl className="mt-7 max-w-sm font-sans text-[10px] uppercase tracking-[0.22em] text-white/70">
+          {SPEC_ROWS.map(([label, value], i) => (
+            <div
+              key={label}
+              ref={(el) => {
+                rowRefs.current[i] = el;
+              }}
+              className="flex justify-between border-b border-white/10 py-2"
+            >
+              <dt className="text-white/35">{label}</dt>
+              <dd>{value}</dd>
+            </div>
+          ))}
+        </dl>
+      </BeatCopy>
     </BeatSection>
   );
 }
