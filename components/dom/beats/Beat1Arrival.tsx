@@ -18,10 +18,10 @@ export function Beat1Arrival() {
     <BeatSection id="arrival" align="top">
       <BeatCopy
         eyebrow={CHAPTER.eyebrow}
-        roman="A stone carries"
-        italic="its mountain."
+        roman="The Life"
+        italic="of a Stone."
         bodyVariant="serif"
-        lines={["Natural stones. Precisely cut.", "Hand-finished in sterling silver."]}
+        lines={["Every ring begins long", "before it becomes one."]}
       />
     </BeatSection>
   );

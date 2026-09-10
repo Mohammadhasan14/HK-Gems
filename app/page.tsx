@@ -1,6 +1,5 @@
 import { Beat1Arrival } from "@/components/dom/beats/Beat1Arrival";
 import { Beat2Origin } from "@/components/dom/beats/Beat2Origin";
-import { BeatInhale } from "@/components/dom/beats/BeatInhale";
 import { Beat3Cut } from "@/components/dom/beats/Beat3Cut";
 import { Beat4Tolerance } from "@/components/dom/beats/Beat4Tolerance";
 import { Beat5Object } from "@/components/dom/beats/Beat5Object";
@@ -26,7 +25,6 @@ export default function Home() {
     <>
       <Beat1Arrival />
       <Beat2Origin />
-      <BeatInhale />
       <Beat3Cut />
       <Beat4Tolerance />
       <Beat5Object />

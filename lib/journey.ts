@@ -56,8 +56,8 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     number: "3",
-    label: "The Setting",
-    eyebrow: "Scene 3 — The Setting",
+    label: "The Stone",
+    eyebrow: "Scene 2.1 — The Stone",
     beats: ["tolerance"],
     anchor: "tolerance",
   },

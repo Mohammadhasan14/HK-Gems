@@ -17,8 +17,9 @@ export function Beat3Cut() {
       <BeatCopy
         eyebrow={CHAPTER.eyebrow}
         roman="Precision"
-        italic="reveals light."
-        lines={["Nothing is added.", "Only what does not belong", "is taken away."]}
+        italic="Reveals Light."
+        urdu="قطع سے روشنی ظاہر ہوتی ہے۔"
+        lines={["THE STONE IS CUT", "TO RELEASE ITS TRUE", "BEAUTY WITHIN."]}
       />
     </BeatSection>
   );

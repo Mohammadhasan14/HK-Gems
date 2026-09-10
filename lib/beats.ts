@@ -39,14 +39,14 @@ export interface Beat {
 }
 
 const RAW_BEATS: Array<Omit<Beat, "start" | "end">> = [
-  { id: "arrival", name: "Arrival", pinVh: 140, curveWaypointIndices: [0, 1] },
-  { id: "origin", name: "Origin", pinVh: 160, curveWaypointIndices: [1, 2] },
-  { id: "inhale", name: "The Inhale", pinVh: 60, curveWaypointIndices: [2, 3] },
+  { id: "arrival", name: "Arrival", pinVh: 100, curveWaypointIndices: [0, 1] },
+  { id: "origin", name: "Origin", pinVh: 100, curveWaypointIndices: [1, 2] },
+  { id: "inhale", name: "The Inhale", pinVh: 0, curveWaypointIndices: [2, 3] },
   // The signature moment — camera holds still through the first three cuts,
   // then enters the hull. Longest beat on the page.
-  { id: "cut", name: "The Cut", pinVh: 260, curveWaypointIndices: [3, 5] },
+  { id: "cut", name: "The Cut", pinVh: 100, curveWaypointIndices: [3, 5] },
   // ~140vh matches the brief's tolerance-closing spec exactly (12mm -> 0.4mm).
-  { id: "tolerance", name: "Tolerance", pinVh: 140, curveWaypointIndices: [5, 6] },
+  { id: "tolerance", name: "The Stone", pinVh: 100, curveWaypointIndices: [5, 6] },
   { id: "object", name: "The Object", pinVh: 160, curveWaypointIndices: [6, 7] },
   { id: "worn", name: "Worn", pinVh: 100, curveWaypointIndices: [7, 8] },
   { id: "collection", name: "The Collection", pinVh: 220, curveWaypointIndices: [8, 10] },
