@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #08080a;
+  --background: #030403;
   --foreground: #f5f1e8;
-  --gold: #c9a227;
+  --gold: #d8b66a;
 }
 
 @theme inline {
@@ -22,6 +22,107 @@ body {
 
 body {
   font-family: var(--font-sans);
+}
+
+html { overflow-x: clip; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; }
+a:focus-visible, button:focus-visible { outline: 1px solid var(--gold); outline-offset: 6px; }
+.scene-vignette { position: fixed; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(ellipse at 58% 43%, transparent 30%, #0005 65%, #000d 100%), linear-gradient(0deg, #000c, transparent 19%); }
+.site-header { position: fixed; inset: 0 0 auto; z-index: 40; height: 12vh; max-height: 106px; display: flex; align-items: flex-start; padding: 2.1vw 3%; justify-content: space-between; pointer-events: none; }
+.site-header a { pointer-events: auto; }
+.wordmark { color: var(--gold); display: flex; align-items: center; gap: .9vw; }
+.wordmark svg { width: 3.1vw; height: 3.7vw; max-height: 56px; }
+.wordmark > span { font-family: var(--font-display); font-size: clamp(16px, 1.95vw, 29px); letter-spacing: .23em; line-height: 1.1; }
+.wordmark small { display: block; font-size: .48em; letter-spacing: .2em; margin-top: .4em; }
+.site-header nav { position: absolute; left: 30.2%; display: flex; gap: 3.3vw; padding-top: .7vw; font-size: clamp(8px, .93vw, 13px); letter-spacing: .045em; color: #d7d4cb; }
+.site-header nav a:hover { color: var(--gold); }
+.header-urdu { color: var(--gold); font-family: var(--font-urdu); font-size: clamp(10px, 1.25vw, 18px); padding-top: .1vw; }
+.story-nav { position: fixed; left: calc(4.4% - .95vw); top: calc(22.6% - .95vw); z-index: 30; width: 11%; }
+.story-nav ol { position: relative; display: flex; flex-direction: column; gap: 5.95vh; }
+.story-nav ol::before { content: ''; position: absolute; left: .95vw; top: .95vw; bottom: .95vw; width: 1px; background: #66665b8c; }
+.story-nav button { position: relative; display: flex; align-items: center; gap: 1.05vw; color: #b0afa8; font-size: clamp(8px, .86vw, 12px); letter-spacing: .045em; text-transform: uppercase; white-space: nowrap; }
+.chapter-marker { width: 1.9vw; height: 1.9vw; border: 1px solid #85877d; border-radius: 50%; display: grid; place-items: center; background: #070807; font-size: clamp(7px,.72vw,10px); }
+.story-nav [aria-current] { color: var(--gold); }
+.story-nav [aria-current] .chapter-marker { border-color: #f2ce77; box-shadow: 0 0 0 .5px #f2ce77; color: #f2ce77; }
+.story-nav button:hover { color: #f0dab0; }
+.scene-progress { position: fixed; left: 95.3%; top: 37%; z-index: 30; display: flex; flex-direction: column; align-items: center; gap: 1.6vh; font-size: clamp(10px,1.14vw,15px); color: #8d8e88; }
+.progress-track { position: relative; display: block; height: 17vh; width: 1px; background: #686960; }
+.progress-track > span { position: absolute; top: 0; width: 2px; left: -.5px; height: 26%; background: #f1d588; }
+.beat-section { position: relative; }
+.reference-scene { height: 100svh; border-bottom: 1px solid #beb29918; }
+.scene-copy-frame { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; padding-left: 15.7%; pointer-events: none; }
+.scene-copy-frame.hero-copy { padding-left: 18.5%; padding-bottom: 6.4vh; }
+.beat-copy { width: 29vw; color: #f1eee6; }
+.scene-eyebrow { font-size: clamp(8px,.95vw,13px); letter-spacing: .17em; text-transform: uppercase; color: #b9b9ad; margin-bottom: 2.15vw; }
+.scene-heading { font-family: var(--font-display); font-size: clamp(32px,3.8vw,56px); font-weight: 400; line-height: 1.04; letter-spacing: -.025em; }
+.scene-heading em { font-style: italic; font-weight: 400; }
+.hero-copy .scene-heading { font-size: clamp(46px,5.65vw,82px); line-height: .99; }
+.hero-copy .scene-eyebrow { margin-bottom: 1.6vw; }
+.hero-copy .gold-divider { margin-block: 1.4vw; }
+.gold-divider { display: block; width: 1.8vw; height: 2px; background: var(--gold); margin: 2.1vw 0 1.7vw; }
+.scene-support { color: #c2c3bb; font-size: clamp(10px,1.16vw,16px); line-height: 2.1; letter-spacing: .14em; }
+.serif-support { font-family: var(--font-display); text-transform: none; font-size: clamp(14px,1.58vw,22px); line-height: 1.22; letter-spacing: 0; }
+.scene-urdu { font-family: var(--font-urdu); color: var(--gold); font-size: clamp(13px,1.57vw,22px); display: table; margin-top: 2vw; line-height: 2.1; }
+.scene-urdu + .gold-divider { margin-top: 1.9vw; }
+.hero-footer { padding-inline: 3.5%; bottom: 5.5%; }
+.hero-footer > div:nth-child(2) { gap: 9px; }
+.hero-footer > div:nth-child(2) > span:nth-child(2) { height: 26px; background: #b9b9ad; }
+.hero-footer > div:nth-child(2) > span:last-child { width: 9px; height: 9px; margin-top: -9px; background: #060706; border-color: #c9c8bc; }
+.later-copy-frame { position: sticky; top: 0; min-height: 100svh; display: flex; flex-direction: column; justify-content: center; padding-left: 15.7%; padding-block: 90px; z-index: 10; }
+.adaptive-copy { color: var(--beat-ink); }
+.adaptive-copy .scene-support, .adaptive-copy .scene-eyebrow { color: var(--beat-ink-muted); }
+
+@media (min-width: 700px) {
+  #tolerance .scene-copy-frame { padding-left: 16.2%; padding-bottom: 22vh; }
+  #tolerance .scene-heading { font-size: clamp(36px, 4.4vw, 64px); }
+  .story-nav[data-active="tolerance"] { top: calc(17% - .95vw); }
+  .scene-progress[data-active="tolerance"] { top: 28%; }
+}
+
+@media (min-aspect-ratio: 2/1) and (min-width: 700px) {
+  .scene-heading { font-size: 6.4vh; }
+  .hero-copy .scene-heading { font-size: 8.7vh; }
+  .scene-eyebrow { margin-bottom: 2.6vh; }
+  .gold-divider { margin-block: 3vh 2vh; }
+}
+@media (max-width: 699px) {
+  .site-header { padding: 22px 6%; height: 90px; }
+  .wordmark { gap: 10px; }
+  .wordmark svg { width: 25px; height: 35px; }
+  .wordmark > span { font-size: 18px; }
+  .site-header nav { display: none; }
+  .header-urdu { font-size: 13px; }
+  .story-nav { left: 6%; right: 6%; top: auto; bottom: 19px; width: auto; }
+  .story-nav ol { flex-direction: row; justify-content: space-between; gap: 0; }
+  .story-nav ol::before { top: 10px; left: 10px; right: 10px; bottom: auto; width: auto; height: 1px; }
+  .story-nav button { font-size: 7px; gap: 0; }
+  .story-nav button > span:last-child { display: none; }
+  .chapter-marker { width: 21px; height: 21px; font-size: 8px; }
+  .scene-copy-frame, .scene-copy-frame.hero-copy { align-items: flex-start; padding: 120px 8% 0; }
+  .beat-copy { width: 84vw; }
+  .scene-eyebrow { font-size: 8px; margin-bottom: 15px; }
+  .scene-heading { font-size: 34px; line-height: 1.04; }
+  .hero-copy .scene-heading { font-size: 45px; }
+  .hero-copy .scene-eyebrow { margin-bottom: 16px; }
+  .gold-divider { width: 16px; margin: 16px 0 12px; height: 1px; }
+  .scene-support { font-size: 9px; line-height: 1.8; letter-spacing: .1em; }
+  .serif-support { font-size: 14px; line-height: 1.2; letter-spacing: 0; }
+  .scene-urdu { font-size: 12px; margin-top: 13px; }
+  .scene-urdu + .gold-divider { margin-top: 14px; }
+  .scene-progress { left: auto; right: 5%; top: 49%; gap: 12px; font-size: 9px; }
+  .progress-track { height: 78px; }
+  .hero-footer { bottom: 65px; }
+  .hero-footer > div:nth-child(2) > span:first-child { font-size: 7px; }
+  .hero-footer > div:nth-child(2) > span:nth-child(2) { height: 17px; }
+  .scene-vignette { background: radial-gradient(ellipse at 50% 62%, transparent 20%, #0007 72%, #000c 100%); }
+  .later-copy-frame { padding: 110px 8% 80px; }
+}
+@media (max-width: 699px) and (max-height: 740px) {
+  .scene-copy-frame, .scene-copy-frame.hero-copy { padding-top: 95px; }
+  .scene-heading { font-size: 30px; }
+  .hero-copy .scene-heading { font-size: 39px; }
+  .scene-eyebrow { margin-bottom: 10px; }
 }
 
 /* Lenis recommended baseline (https://lenis.darkroom.engineering) — Lenis

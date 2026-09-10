@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useScroll } from "@/store/useScroll";
 import { BEATS } from "@/lib/beats";
-import { audio } from "@/lib/audio";
+import { audio, setAmbientSound } from "@/lib/audio";
 
 const ARRIVAL = BEATS.find((b) => b.id === "arrival")!;
 
@@ -16,13 +16,13 @@ function SoundToggle() {
   return (
     <button
       type="button"
-      onClick={() => {
+      onClick={async () => {
         const next = !on;
-        audio.enabled = next;
-        setOn(next);
+        try { await setAmbientSound(next); setOn(next); }
+        catch { setOn(false); }
       }}
       aria-pressed={on}
-      className="group flex items-center gap-3 font-sans text-[10px] uppercase tracking-[0.28em] text-white/45 transition-colors duration-300 hover:text-white/80"
+      className="group flex items-center gap-3 font-sans text-[9px] uppercase tracking-[0.08em] text-white/70 transition-colors duration-300 hover:text-white/80"
     >
       <span>Sound</span>
       <span aria-hidden="true" className="flex h-3 items-center gap-[2px]">
@@ -70,14 +70,14 @@ export function HeroFooter() {
   return (
     <div
       ref={ref}
-      className="fixed inset-x-0 bottom-8 z-30 flex items-end justify-between px-6 sm:px-10"
+      className="hero-footer fixed inset-x-0 bottom-8 z-30 flex items-end justify-between"
     >
       <div className="hidden sm:block">
         <SoundToggle />
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-col items-center gap-3">
-        <span className="font-sans text-[10px] uppercase tracking-[0.38em] text-white/45">
+        <span className="font-sans text-[9px] uppercase tracking-[0.18em] text-white/70">
           Scroll to begin
         </span>
         <span className="h-9 w-px bg-gradient-to-b from-white/35 to-transparent" />
@@ -86,7 +86,7 @@ export function HeroFooter() {
 
       <span
         aria-hidden="true"
-        className="ml-auto hidden items-center gap-3 font-sans text-[10px] uppercase tracking-[0.28em] text-white/45 sm:flex"
+        className="ml-auto hidden items-center gap-3 font-sans text-[9px] uppercase tracking-[0.08em] text-white/70 sm:flex"
       >
         Scroll
         <svg viewBox="0 0 10 22" className="h-5 w-[10px]" fill="none" aria-hidden="true">

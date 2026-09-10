@@ -12,23 +12,20 @@ export function noise(x: number, y: number, z: number): number {
   return v;
 }
 
-/** Shared topology permits an actual rough-to-polished morph. The field is
- * sampled in 3D, so the material has no UV seams or polar pinching. */
+/** Shared topology permits an actual rough-to-polished morph. The material
+ * maps are baked from a 3D field to keep their seams continuous. */
 export function makeMineralGeometry() {
   const geometry = new THREE.SphereGeometry(1, 160, 112);
   const raw = geometry.attributes.position as THREE.BufferAttribute;
-  const coords = raw.clone();
   const polished = raw.clone();
   for (let i = 0; i < raw.count; i++) {
     const x = raw.getX(i), y = raw.getY(i), z = raw.getZ(i);
     const n = (f: number) => noise(x * f + 5.2, y * f + 3.1, z * f + 7.8) - 0.5;
-    const relief = 1 + n(3) * 0.36 + n(8) * 0.18 + n(23) * 0.105 + n(64) * 0.042;
+    const relief = 1 + n(3) * 0.38 + n(8) * 0.17 + n(23) * 0.065 + n(64) * 0.016;
     const taper = 1 - y * 0.1;
-    raw.setXYZ(i, x * relief * 0.92 * taper, y * relief * 1.39, z * relief * 0.76);
+    raw.setXYZ(i, x * relief * 0.92 * taper, y * relief * 1.08, z * relief * 0.76);
     polished.setXYZ(i, x * 0.82 * (1 - y * 0.065), y * 1.39, z * 0.62);
-    coords.setXYZ(i, x, y * 1.4, z);
   }
-  geometry.setAttribute("mineralCoord", coords);
   geometry.computeVertexNormals();
   const oval = geometry.clone();
   oval.setAttribute("position", polished);
@@ -60,70 +57,55 @@ export function makeCutPiece() {
   }
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  geometry.setAttribute("mineralCoord", new THREE.Float32BufferAttribute(positions, 3));
+  const uv: number[] = [];
+  for (let i = 0; i < positions.length; i += 3) {
+    uv.push(positions[i] * .26 + .5, positions[i + 1] * .8 + .5);
+  }
+  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
   geometry.computeVertexNormals();
   return geometry;
 }
 
-export const mineralNoise = /* glsl */`
-  varying vec3 vMineral;
-  uniform float uRaw;
-  float hash31(vec3 p) { return fract(sin(dot(p, vec3(127.1,311.7,74.7))) * 43758.5453); }
-  float n3(vec3 p) {
-    vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
-    return mix(mix(mix(hash31(i),hash31(i+vec3(1,0,0)),f.x),mix(hash31(i+vec3(0,1,0)),hash31(i+vec3(1,1,0)),f.x),f.y),
-      mix(mix(hash31(i+vec3(0,0,1)),hash31(i+vec3(1,0,1)),f.x),mix(hash31(i+vec3(0,1,1)),hash31(i+vec3(1,1,1)),f.x),f.y),f.z);
+const textureCache = new Map<string, THREE.Texture>();
+function texture(name: string, color = false) {
+  if (!textureCache.has(name)) {
+    const map = new THREE.TextureLoader().load(`/materials/${name}.jpg`, () => window.dispatchEvent(new Event("mineral-texture-ready")));
+    map.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
+    map.wrapS = THREE.RepeatWrapping;
+    map.anisotropy = 4;
+    textureCache.set(name, map);
   }
-  float fbm(vec3 p) { return n3(p)*.53 + n3(p*2.07)*.27 + n3(p*4.13)*.13 + n3(p*8.31)*.07; }
-  vec3 mineralField(vec3 p) {
-    vec3 warp=vec3(fbm(p*2.4),fbm(p*2.4+14.),fbm(p*2.4+31.));
-    vec3 q=p*5.8+warp*3.3;
-    float field=fbm(q);
-    float width=.008+.027*pow(n3(p*8.+18.),2.);
-    float primary=1.-smoothstep(width,width+.012,abs(field-.5));
-    float branch=(1.-smoothstep(.007,.017,abs(fbm(q*2.3+9.)-.51)))*smoothstep(.43,.6,n3(p*3.));
-    float vein=max(primary,branch*.75);
-    float rock=smoothstep(.43,.57,fbm(p*7.+4.));
-    return vec3(vein, rock, fbm(p*28.));
-  }
-`;
+  return textureCache.get(name)!;
+}
 
 export function makeMineralMaterial(raw: boolean, cut = false) {
   const material = new THREE.MeshPhysicalMaterial({
-    roughness: raw ? 0.86 : 0.26, metalness: 0.04,
-    clearcoat: raw ? 0.05 : 0.48, clearcoatRoughness: 0.23,
-    transmission: 0, envMapIntensity: cut ? 0.65 : 0.38,
+    map: texture("polished-color", true),
+    roughnessMap: texture("polished-roughness"),
+    bumpMap: texture(raw ? "raw-height" : "polished-height"),
+    bumpScale: raw ? .035 : .003,
+    roughness: 1,
+    metalness: .025, clearcoat: raw ? .2 : .4, clearcoatRoughness: .14,
+    transmission: 0,
+    envMapIntensity: cut ? .8 : .38,
   });
   const rawUniform = { value: raw ? 1 : 0 };
+  const rawMap = texture("raw-color", true);
+  const rawRoughness = texture("raw-roughness");
   material.userData.raw = rawUniform;
   material.onBeforeCompile = (shader) => {
     shader.uniforms.uRaw = rawUniform;
-    shader.vertexShader = `attribute vec3 mineralCoord; varying vec3 vMineral;\n${shader.vertexShader}`
-      .replace("#include <begin_vertex>", "#include <begin_vertex>\nvMineral = mineralCoord;");
-    shader.fragmentShader = mineralNoise + shader.fragmentShader;
-    shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", /* glsl */`
+    shader.uniforms.uRawMap = { value: rawMap };
+    shader.uniforms.uRawRoughness = { value: rawRoughness };
+    shader.fragmentShader = "uniform float uRaw; uniform sampler2D uRawMap; uniform sampler2D uRawRoughness;\n" + shader.fragmentShader;
+    shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `
       #include <map_fragment>
-      vec3 mf = mineralField(vMineral);
-      float grain=n3(vMineral*210.);
-      float mottle=fbm(vMineral*4.+17.);
-      vec3 turquoise=mix(vec3(.004,.115,.135),vec3(.014,.43,.47),smoothstep(.22,.76,mottle));
-      turquoise *= .85 + mf.z*.3;
-      vec3 matrix=mix(vec3(.045,.025,.01), vec3(.40,.28,.125),mf.z*.8+grain*.2);
-      float matrixMask=mix(mf.x, max(mf.x,mf.y*.93),uRaw);
-      diffuseColor.rgb=mix(turquoise,matrix,matrixMask);
-      diffuseColor.rgb *= 1. - uRaw * (.15 + grain*.18);
-    `).replace("#include <roughnessmap_fragment>", /* glsl */`
+      diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uRawMap, vMapUv).rgb, uRaw);
+    `).replace("#include <roughnessmap_fragment>", `
       #include <roughnessmap_fragment>
-      roughnessFactor=clamp(roughnessFactor + matrixMask*.17, .18, 1.);
-    `).replace("#include <normal_fragment_maps>", /* glsl */`
-      #include <normal_fragment_maps>
-      float heightField = mf.z * mix(.0015,.026,uRaw) - mf.x*mix(.0007,.012,uRaw) + grain*.002*uRaw;
-      vec3 q0=dFdx(-vViewPosition), q1=dFdy(-vViewPosition);
-      vec3 s0=cross(q1,normal), s1=cross(normal,q0);
-      float det=dot(q0,s0);
-      normal=normalize(abs(det)*normal-sign(det)*(dFdx(heightField)*s0+dFdy(heightField)*s1));
+      roughnessFactor = mix(roughnessFactor, texture2D(uRawRoughness, vRoughnessMapUv).g, uRaw);
     `);
   };
-  material.customProgramCacheKey = () => "hk-mineral-v1";
+  material.customProgramCacheKey = () => "hk-mineral-texture-v2";
   return material;
 }

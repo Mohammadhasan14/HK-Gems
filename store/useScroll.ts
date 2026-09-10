@@ -10,7 +10,7 @@ import type { Quality } from "@/lib/quality";
  * from here — nothing else owns scroll state, per the architecture rules.
  */
 interface ScrollStore {
-  /** 0-1, raw Lenis progress for the whole document. */
+  /** Document offset divided by the total section height; shared by DOM and WebGL. */
   progress: number;
   scene: number;
   /** Signed scroll velocity from Lenis, px/frame. */

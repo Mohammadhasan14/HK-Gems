@@ -11,10 +11,13 @@ export function BeatSection({ id, className = "", children }: {
   const index = SCENE_IDS.findIndex((scene) => scene === id);
   const beat = BEATS.find((b) => b.id === id)!;
   useEffect(() => {
-    if (index < 0) return;
     const sync = () => {
       if (!ref.current) return;
       const phase = useScroll.getState().scene;
+      if (index < 0) {
+        ref.current.style.visibility = phase >= 4 ? "visible" : "hidden";
+        return;
+      }
       const opacity = copyOpacity(phase, index);
       ref.current.style.opacity = String(opacity);
       ref.current.style.visibility = opacity > 0.001 ? "visible" : "hidden";

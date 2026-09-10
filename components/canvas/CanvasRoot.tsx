@@ -1,8 +1,21 @@
 "use client";
 
-import { Suspense } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Suspense, useEffect } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
 import { Scene } from "./Scene";
+import { useScroll } from "@/store/useScroll";
+import * as THREE from "three";
+
+function ScrollFrames() {
+  const invalidate = useThree((s) => s.invalidate);
+  useEffect(() => {
+    const off = useScroll.subscribe(() => invalidate());
+    const loaded = () => invalidate();
+    window.addEventListener("mineral-texture-ready", loaded);
+    return () => { off(); window.removeEventListener("mineral-texture-ready", loaded); };
+  }, [invalidate]);
+  return null;
+}
 
 /**
  * The one persistent Canvas — fixed, behind all DOM, mounted once here at
@@ -20,19 +33,23 @@ import { Scene } from "./Scene";
  * gets close.
  */
 export function CanvasRoot() {
+  const later = useScroll((s) => s.scene >= 4);
   // z-0 (not a negative z-index): `body` in app/layout.tsx has its own
   // opaque background and no stacking context of its own, so a negative
   // z-index here would paint *behind* that background and never be visible
   // — a classic CSS trap. z-0 plus DOM order (this mounts before the DOM
   // text layer in SiteShell) is what actually keeps it behind the text.
   return (
-    <div className="fixed inset-0 z-0" aria-hidden="true">
+    <div className="journey-canvas fixed inset-0 z-0" aria-hidden="true">
       <Canvas
+        shadows={{ type: THREE.PCFShadowMap }}
+        frameloop={later ? "always" : "demand"}
         gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         camera={{ fov: 35, near: 0.01, far: 100, position: [0, 1.2, 9] }}
       >
-        <color attach="background" args={["#08080A"]} />
+        <ScrollFrames />
+        <color attach="background" args={["#030403"]} />
         <Suspense fallback={null}>
           <Scene />
         </Suspense>

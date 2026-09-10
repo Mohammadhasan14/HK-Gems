@@ -43,11 +43,25 @@ function fitDolly(aspect: number): number {
  * sampled at a single smoothed progress value — no per-beat camera exists.
  */
 export function CameraRig() {
-  const { camera, size } = useThree();
+  const { size } = useThree();
   const smoothedProgress = useRef(0);
 
   useFrame((_state, delta) => {
-    const { progress, velocity } = useScroll.getState();
+    const camera = _state.camera as THREE.PerspectiveCamera;
+    const { progress, velocity, scene } = useScroll.getState();
+    if (scene < 4) {
+      const mobile = size.width < 700;
+      const viewWidth = mobile ? 5.1 : 10.5;
+      const distance = 9.2;
+      const perspective = camera as THREE.PerspectiveCamera;
+      perspective.fov = THREE.MathUtils.radToDeg(2 * Math.atan((viewWidth / (size.width / size.height)) / (2 * distance)));
+      camera.position.set(0, 1.35, distance);
+      camera.lookAt(0, 0, 0);
+      perspective.updateProjectionMatrix();
+      return;
+    }
+    (camera as THREE.PerspectiveCamera).fov = 35;
+    camera.updateProjectionMatrix();
 
     // Smooth the raw scroll progress so camera motion lags the wheel (the
     // "scrub ~1" feel from the brief) rather than snapping to it 1:1. This is

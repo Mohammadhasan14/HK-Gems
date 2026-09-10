@@ -9,7 +9,6 @@ import { Header } from "./Header";
 import { StoryNav } from "./StoryNav";
 import { ScrollProgress } from "./ScrollProgress";
 import { HeroFooter } from "./HeroFooter";
-import { Loader } from "./Loader";
 import { WornExposure } from "./WornExposure";
 
 /**
@@ -22,14 +21,14 @@ export function SiteShell({ children }: { children: ReactNode }) {
   return (
     <ScrollProvider>
       <CanvasRoot />
+      <div className="scene-vignette" aria-hidden="true" />
       <WornExposure />
       <QualityController />
       <Header />
       <StoryNav />
       <ScrollProgress />
       <HeroFooter />
-      <main className="relative z-0">{children}</main>
-      <Loader />
+      <main className="relative z-10">{children}</main>
       <DevHud />
     </ScrollProvider>
   );

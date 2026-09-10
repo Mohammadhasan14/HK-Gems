@@ -1,0 +1,290 @@
+{
+  "errors": [],
+  "results": [
+    {
+      "viewport": "887x500",
+      "id": "arrival",
+      "active": "0Hero",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "arrival"
+      ]
+    },
+    {
+      "viewport": "887x500",
+      "id": "origin",
+      "active": "1Descent",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "origin"
+      ]
+    },
+    {
+      "viewport": "887x500",
+      "id": "cut",
+      "active": "2The Cut",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "cut"
+      ]
+    },
+    {
+      "viewport": "887x500",
+      "id": "tolerance",
+      "active": "3The Stone",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "tolerance"
+      ]
+    },
+    {
+      "viewport": "1440x900",
+      "id": "arrival",
+      "active": "0Hero",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "arrival"
+      ]
+    },
+    {
+      "viewport": "1440x900",
+      "id": "origin",
+      "active": "1Descent",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "origin"
+      ]
+    },
+    {
+      "viewport": "1440x900",
+      "id": "cut",
+      "active": "2The Cut",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "cut"
+      ]
+    },
+    {
+      "viewport": "1440x900",
+      "id": "tolerance",
+      "active": "3The Stone",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "tolerance"
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "id": "arrival",
+      "active": "0Hero",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "arrival"
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "id": "origin",
+      "active": "1Descent",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "origin"
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "id": "cut",
+      "active": "2The Cut",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "cut"
+      ]
+    },
+    {
+      "viewport": "390x844",
+      "id": "tolerance",
+      "active": "3The Stone",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "tolerance"
+      ]
+    },
+    {
+      "viewport": "360x640",
+      "id": "arrival",
+      "active": "0Hero",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "arrival"
+      ]
+    },
+    {
+      "viewport": "360x640",
+      "id": "origin",
+      "active": "1Descent",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "origin"
+      ]
+    },
+    {
+      "viewport": "360x640",
+      "id": "cut",
+      "active": "2The Cut",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "cut"
+      ]
+    },
+    {
+      "viewport": "360x640",
+      "id": "tolerance",
+      "active": "3The Stone",
+      "canvases": 1,
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "tolerance"
+      ]
+    }
+  ],
+  "shortScreenFollowup": {
+    "errors": [],
+    "results": [
+      {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "id": "arrival",
+        "overflow": false,
+        "copy": [
+          "arrival"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "id": "origin",
+        "overflow": false,
+        "copy": [
+          "origin"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "id": "cut",
+        "overflow": false,
+        "copy": [
+          "cut"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 360,
+          "height": 640
+        },
+        "id": "tolerance",
+        "overflow": false,
+        "copy": [
+          "tolerance"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "id": "arrival",
+        "overflow": false,
+        "copy": [
+          "arrival"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "id": "origin",
+        "overflow": false,
+        "copy": [
+          "origin"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "id": "cut",
+        "overflow": false,
+        "copy": [
+          "cut"
+        ]
+      },
+      {
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "id": "tolerance",
+        "overflow": false,
+        "copy": [
+          "tolerance"
+        ]
+      }
+    ]
+  }
+}

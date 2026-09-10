@@ -4,9 +4,8 @@ import localFont from "next/font/local";
 import { SiteShell } from "@/components/dom/SiteShell";
 import "./globals.css";
 
-// Display headlines — brief calls for mixing roman and italic across lines,
-// so both styles are loaded.
-const cormorant = localFont({
+// Nimbus Roman has the reference's compact roman forms and long, true italics.
+const display = localFont({
   src: [
     { path: "../public/fonts/NimbusRoman-Regular.otf", weight: "400", style: "normal" },
     { path: "../public/fonts/NimbusRoman-Italic.otf", weight: "400", style: "italic" },
@@ -48,7 +47,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${cormorant.variable} ${inter.variable} ${urdu.variable} h-full`}
+      className={`${display.variable} ${inter.variable} ${urdu.variable} h-full`}
     >
       <body className="min-h-full bg-[#08080A] text-white antialiased">
         <script
