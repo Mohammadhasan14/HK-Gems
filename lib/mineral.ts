@@ -12,58 +12,49 @@ export function noise(x: number, y: number, z: number): number {
   return v;
 }
 
-/** Shared topology permits an actual rough-to-polished morph. The material
- * maps are baked from a 3D field to keep their seams continuous. */
+/** One high-resolution lattice: rough, hand-carved and cabochon targets.
+ * Uneven clipped planes describe removed rock, never a brilliant diamond cut. */
 export function makeMineralGeometry() {
-  const geometry = new THREE.SphereGeometry(1, 160, 112);
+  const geometry = new THREE.SphereGeometry(1, 192, 128);
   const raw = geometry.attributes.position as THREE.BufferAttribute;
-  const polished = raw.clone();
+  const carved = raw.clone(), polished = raw.clone();
   for (let i = 0; i < raw.count; i++) {
     const x = raw.getX(i), y = raw.getY(i), z = raw.getZ(i);
-    const n = (f: number) => noise(x * f + 5.2, y * f + 3.1, z * f + 7.8) - 0.5;
-    const relief = 1 + n(3) * 0.38 + n(8) * 0.17 + n(23) * 0.065 + n(64) * 0.016;
-    const taper = 1 - y * 0.1;
-    raw.setXYZ(i, x * relief * 0.92 * taper, y * relief * 1.08, z * relief * 0.76);
-    polished.setXYZ(i, x * 0.82 * (1 - y * 0.065), y * 1.39, z * 0.62);
+    const n = (f: number) => noise(x * f + 5.2, y * f + 3.1, z * f + 7.8) - .5;
+    const chips = Math.abs(n(13)) * .19 - Math.abs(n(32)) * .11;
+    const relief = 1 + n(3) * .48 + n(7) * .23 + chips + n(80) * .025;
+    const taper = 1 - y * .19;
+    raw.setXYZ(i, x * relief * .98 * taper, y * relief * 1.42, z * relief * .73);
+    // Asymmetric plane cuts leave an elongated, still rough mineral core.
+    let cx = x * .87, cy = y * 1.40, cz = z * .65;
+    const clipping = Math.max(1, (cx * .8 + cy * .36 + cz * .35) / .82,
+      (-cx * .85 + cy * .24 + cz * .25) / .83, (-cx * .4 - cy * .58 + cz * .35) / .87);
+    const grit = 1 + n(19) * .045 + n(55) * .025;
+    cx = cx / clipping * grit; cy = cy / clipping * grit; cz = cz / clipping * grit;
+    carved.setXYZ(i, cx, cy, cz);
+    polished.setXYZ(i, x * .81 * (1 - y * .10), y * 1.37, z * .61);
   }
   geometry.computeVertexNormals();
-  const oval = geometry.clone();
-  oval.setAttribute("position", polished);
-  oval.computeVertexNormals();
-  geometry.morphAttributes.position = [polished];
-  geometry.morphAttributes.normal = [oval.attributes.normal.clone()];
+  geometry.morphAttributes.position = [carved, polished];
+  geometry.morphAttributes.normal = [carved, polished].map(position => {
+    const target = new THREE.BufferGeometry(); target.setIndex(geometry.index);
+    target.setAttribute("position", position); target.computeVertexNormals();
+    const normals = target.attributes.normal.clone(); target.dispose(); return normals;
+  });
   geometry.computeBoundingSphere();
-  oval.dispose();
   return geometry;
 }
 
-/** Closed lens with planar facets, used as four independent cut meshes. */
-export function makeCutPiece() {
-  const points: THREE.Vector3[] = [];
-  const rings = [[-0.29, 0.12], [-0.09, 0.73], [0.025, 1], [0.2, 0.49], [0.32, 0.05]];
-  const positions: number[] = [];
-  for (const [y, radius] of rings) for (let i = 0; i < 10; i++) {
-    const angle = i / 10 * Math.PI * 2;
-    points.push(new THREE.Vector3(Math.cos(angle) * radius, y, Math.sin(angle) * radius * 0.68));
+/** Closed jagged chips with varied aspect ratios and mineral-textured faces. */
+export function makeFragment(seed: number) {
+  const geometry = new THREE.IcosahedronGeometry(1, 0);
+  const p = geometry.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    const r = .7 + noise(x * 3 + seed, y * 3, z * 3) * .6;
+    p.setXYZ(i, x * r * (.7 + seed * .07), y * r * 1.3, z * r * .63);
   }
-  for (let ring = 0; ring < rings.length - 1; ring++) for (let i = 0; i < 10; i++) {
-    const a = ring * 10 + i, b = ring * 10 + (i + 1) % 10, c = a + 10, d = b + 10;
-    for (const index of [a, c, b, b, c, d]) positions.push(...points[index].toArray());
-  }
-  // Close the small ends rather than leaving open silhouettes.
-  for (const end of [0, 4]) for (let i = 1; i < 9; i++) {
-    const indices = end === 0 ? [0, i, i + 1] : [40, 40 + i + 1, 40 + i];
-    for (const index of indices) positions.push(...points[index].toArray());
-  }
-  const geometry = new THREE.BufferGeometry();
-  geometry.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3));
-  const uv: number[] = [];
-  for (let i = 0; i < positions.length; i += 3) {
-    uv.push(positions[i] * .26 + .5, positions[i + 1] * .8 + .5);
-  }
-  geometry.setAttribute("uv", new THREE.Float32BufferAttribute(uv, 2));
-  geometry.computeVertexNormals();
-  return geometry;
+  geometry.computeVertexNormals(); return geometry;
 }
 
 const textureCache = new Map<string, THREE.Texture>();
@@ -78,16 +69,16 @@ function texture(name: string, color = false) {
   return textureCache.get(name)!;
 }
 
-export function makeMineralMaterial(raw: boolean, cut = false) {
+export function makeMineralMaterial(raw: boolean) {
   const material = new THREE.MeshPhysicalMaterial({
     map: texture("polished-color", true),
     roughnessMap: texture("polished-roughness"),
     bumpMap: texture(raw ? "raw-height" : "polished-height"),
-    bumpScale: raw ? .035 : .003,
+    bumpScale: raw ? .12 : .012,
     roughness: 1,
-    metalness: .025, clearcoat: raw ? .2 : .4, clearcoatRoughness: .14,
+    metalness: 0, clearcoat: raw ? .04 : .38, clearcoatRoughness: .2,
     transmission: 0,
-    envMapIntensity: cut ? .8 : .38,
+    envMapIntensity: .45,
   });
   const rawUniform = { value: raw ? 1 : 0 };
   const rawMap = texture("raw-color", true);
@@ -106,6 +97,6 @@ export function makeMineralMaterial(raw: boolean, cut = false) {
       roughnessFactor = mix(roughnessFactor, texture2D(uRawRoughness, vRoughnessMapUv).g, uRaw);
     `);
   };
-  material.customProgramCacheKey = () => "hk-mineral-texture-v2";
+  material.customProgramCacheKey = () => "hk-firoza-v3";
   return material;
 }

@@ -1,35 +1,37 @@
 "use client";
 import { useEffect } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useScroll } from "@/store/useScroll";
-import { getLenis, destroyLenis } from "@/lib/lenisBridge";
-import { TOTAL_SCROLL_VH } from "@/lib/beats";
-
+import { getLenis, destroyLenis, scrollToScene } from "@/lib/lenisBridge";
 export function ScrollProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
     const lenis = getLenis();
-    // Section heights, DOM navigation and the renderer use the same denominator.
-    // Lenis.progress uses scrollHeight - innerHeight, which shifts every boundary.
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => {
-      const height = document.getElementById("arrival")?.offsetHeight || window.innerHeight;
-      useScroll.getState().setScroll(window.scrollY / (height * TOTAL_SCROLL_VH / 100), lenis.velocity);
-      ScrollTrigger.update();
+      const height = document.getElementById("earth")?.offsetHeight || window.innerHeight;
+      useScroll.getState().setScroll(window.scrollY / height, media.matches);
     };
     const resize = () => { lenis.resize(); sync(); };
+    const motion = () => { lenis.options.smoothWheel = !media.matches; sync(); };
+    const anchor = (event: MouseEvent) => {
+      const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
+      const href = link?.getAttribute("href");
+      if (!href || !document.getElementById(href.slice(1))) return;
+      event.preventDefault(); scrollToScene(href);
+      history.replaceState(null, "", href);
+    };
+    let frame: number;
+    const raf = (time: number) => { lenis.raf(time); frame = requestAnimationFrame(raf); };
+    frame = requestAnimationFrame(raf);
     lenis.on("scroll", sync);
     window.addEventListener("scroll", sync, { passive: true });
     window.addEventListener("resize", resize);
-    const update = (time: number) => lenis.raf(time * 1000);
-    gsap.ticker.add(update);
-    gsap.ticker.lagSmoothing(0);
+    document.addEventListener("click", anchor);
+    media.addEventListener("change", motion);
     sync();
     return () => {
-      window.removeEventListener("scroll", sync);
-      window.removeEventListener("resize", resize);
-      lenis.off("scroll", sync);
-      gsap.ticker.remove(update);
+      cancelAnimationFrame(frame); lenis.off("scroll", sync);
+      window.removeEventListener("scroll", sync); window.removeEventListener("resize", resize);
+      document.removeEventListener("click", anchor); media.removeEventListener("change", motion);
       destroyLenis();
     };
   }, []);

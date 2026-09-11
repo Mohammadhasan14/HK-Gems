@@ -1,64 +1,76 @@
 "use client";
-
 import { useEffect, useMemo, useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
-import { makeCutPiece, makeMineralGeometry, makeMineralMaterial } from "@/lib/mineral";
+import { makeFragment, makeMineralGeometry, makeMineralMaterial } from "@/lib/mineral";
 import { useScroll } from "@/store/useScroll";
-import { smooth, mobileStageOffset } from "@/lib/sceneTimeline";
+import { smooth, stagePlacement } from "@/lib/sceneTimeline";
+import { SilverRing } from "./SilverRing";
 
+const lerp = THREE.MathUtils.lerp;
+const sample = (values: number[], phase: number) => {
+  const i = Math.min(values.length - 1, Math.floor(phase));
+  return lerp(values[i], values[Math.min(i + 1, values.length - 1)], phase - i);
+};
+const random = (i: number) => { const x = Math.sin(i * 173.31 + 31.7) * 43758.5453; return x - Math.floor(x); };
+// Deliberate loose radial arrangement: larger chips sit outside the central silhouette.
+const FRAGMENTS = Array.from({ length: 34 }, (_, i) => {
+  const angle = i * 2.39996;
+  const radius = 1.25 + random(i) * .62;
+  return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius * 1.05 + .17,
+    z: -.18 + random(i + 55) * .5, scale: i < 13 ? .12 + random(i + 10) * .15 : .035 + random(i + 8) * .075 };
+});
 export function MineralJourney() {
   const { size } = useThree();
-  const group = useRef<THREE.Group>(null);
-  const stone = useRef<THREE.Mesh>(null);
+  const group = useRef<THREE.Group>(null), setting = useRef<THREE.Group>(null);
+  const pose = useRef<THREE.Group>(null), stone = useRef<THREE.Mesh>(null);
   const pieces = useRef<(THREE.Mesh | null)[]>([]);
-  const assets = useMemo(() => ({
-    stone: makeMineralGeometry(), piece: makeCutPiece(),
-    body: makeMineralMaterial(true), cut: makeMineralMaterial(false, true),
-  }), []);
-  useEffect(() => () => { Object.values(assets).forEach((asset) => asset.dispose()); }, [assets]);
-
+  const assets = useMemo(() => ({ stone: makeMineralGeometry(),
+    chips: [0, 1, 2, 3].map(makeFragment), body: makeMineralMaterial(true), chipMaterial: makeMineralMaterial(true) }), []);
+  useEffect(() => () => { assets.stone.dispose(); assets.body.dispose(); assets.chipMaterial.dispose(); assets.chips.forEach(g => g.dispose()); }, [assets]);
   useFrame(() => {
-    if (!group.current || !stone.current) return;
+    if (!group.current || !stone.current || !pose.current || !setting.current) return;
     const phase = useScroll.getState().scene;
-    group.current.visible = phase < 4;
-    const mobile = size.width < 700;
-    const shortScreenOffset = mobileStageOffset(size.width, size.height);
-    const polish = Math.min(1, phase);
-    const explosion = smooth(1, 2, phase) * (1 - smooth(2, 3, phase));
-    const scale = mobile ? 0.93 : 1.17;
-    const centerX = phase < 1 ? THREE.MathUtils.lerp(.58, 1.05, phase) : THREE.MathUtils.lerp(1.05, .8, Math.min(1, phase - 1));
-    const finished = smooth(2, 3, phase);
-    group.current.position.set(mobile ? 0.05 : centerX, mobile ? -.55 + shortScreenOffset : THREE.MathUtils.lerp(.02, .08, polish) + finished * .15, 0);
-    group.current.scale.setScalar(scale);
-    // A small yaw and tilt preserve the text column throughout the morph.
-    const tilt = phase < 1 ? THREE.MathUtils.lerp(-.19, -.37, phase)
-      : phase < 2 ? THREE.MathUtils.lerp(-.37, -.06, phase - 1)
-      : THREE.MathUtils.lerp(-.06, -.13, Math.min(1, phase - 2));
-    stone.current.rotation.set(.02, .12 + Math.min(phase, 3) * .065, tilt);
-    stone.current.scale.setScalar(1 - explosion * 0.27);
-    stone.current.scale.y *= 1 - finished * .12;
-    stone.current.morphTargetInfluences![0] = polish;
+    const placement = stagePlacement(size.width, size.height);
+    const polish = smooth(2, 3, phase), carved = smooth(1, 2, phase) * (1 - polish);
+    const ring = smooth(4, 5, phase);
+    group.current.position.set(placement.mobile ? -.1 : sample([.98, .93, .96, .8, 1.04, 1.12], phase), placement.centerY, 0);
+    group.current.scale.setScalar(placement.scale * sample([1.04, 1.07, 1.01, .96, .98, .94], phase));
+    pose.current.rotation.set(sample([.06, -.07, .06, .04, .02, .12], phase),
+      sample([.12, .60, .2, .16, .09, -.64], phase), sample([-.09, -.31, -.1, -.27, .015, -.34], phase));
+    pose.current.position.y = sample([.06, -.15, -.16, -.24, -.2, -.24], phase);
+    stone.current.morphTargetInfluences![0] = carved;
+    stone.current.morphTargetInfluences![1] = polish;
+    stone.current.scale.set(1, sample([1, .93, 1, 1, 1, 1], phase), lerp(1, .37, ring));
+    stone.current.position.z = ring * .13;
     const material = stone.current.material as THREE.MeshPhysicalMaterial;
     material.userData.raw.value = 1 - polish;
-    material.roughness = 1;
-    material.bumpScale = THREE.MathUtils.lerp(.035, .003, polish);
-    material.clearcoat = THREE.MathUtils.lerp(.2, .48, polish);
-    // Each shard is a complete independent mesh. The settled cut always has five pieces.
-    const offsets = [[0, 1.42, 0], [0, -1.45, 0], [-1, 0, 0.02], [1, 0, 0.02]];
+    material.bumpScale = lerp(.12, .011, polish);
+    material.clearcoat = lerp(.025, .35, polish);
+    setting.current.visible = ring > .002;
+    setting.current.scale.setScalar(Math.max(.001, ring));
+    // Outward movement is tied to the same phase as the carved morph, and reverses exactly.
+    const explosion = smooth(1, 2, phase);
+    const removal = smooth(2.15, 2.9, phase);
     pieces.current.forEach((mesh, i) => {
       if (!mesh) return;
-      mesh.visible = explosion > 0.01;
-      const [x,y,z] = offsets[i];
-      mesh.position.set(x * explosion, y * explosion, z);
-      mesh.scale.set(i < 2 ? 0.5 : 0.77, i < 2 ? 0.64 : 0.60, 0.72);
-      mesh.scale.multiplyScalar(explosion);
-      mesh.rotation.set(i < 2 ? 0.18 : 0, 0.05, i === 0 ? 0 : i === 1 ? Math.PI : i === 2 ? Math.PI / 2 : -Math.PI / 2);
+      const f = FRAGMENTS[i];
+      const looseDiscovery = i < 3 ? smooth(.4, 1, phase) * (1 - explosion) : 0;
+      const visible = Math.max(explosion * (1 - removal), looseDiscovery);
+      mesh.visible = visible > .005;
+      const spread = explosion * (1 + removal * .35);
+      mesh.position.set(lerp(.35 + f.x * .3, f.x, spread), lerp(f.y * .4, f.y, spread) - removal * .5, f.z);
+      if (looseDiscovery > .5) mesh.position.set(1.35 + i * .13, -.45 - i * .4, -.2);
+      mesh.scale.setScalar(f.scale * visible);
+      mesh.rotation.set(i * .71 + spread * .4, i * 1.13 + spread * .5, i * .51 - spread * .3);
     });
   });
-  return <group ref={group} name="mineral-journey">
-    <mesh ref={stone} name="central-mineral" args={[assets.stone, assets.body]} castShadow receiveShadow />
-    {["top", "bottom", "left", "right"].map((name, i) => <mesh key={name} name={`cut-${name}`}
-      ref={(mesh) => { pieces.current[i] = mesh; }} geometry={assets.piece} material={assets.cut} visible={false} castShadow />)}
+  return <group ref={group} name="firoza-journey">
+    <group ref={pose}>
+      <mesh ref={stone} name="natural-turquoise" geometry={assets.stone} material={assets.body} castShadow receiveShadow />
+      <group ref={setting} visible={false}><SilverRing /></group>
+    </group>
+    {FRAGMENTS.map((_, i) => <mesh key={i} name={`carving-fragment-${i}`}
+      ref={mesh => { pieces.current[i] = mesh; }} geometry={assets.chips[i % 4]} material={assets.chipMaterial} visible={false} castShadow />)}
   </group>;
 }
