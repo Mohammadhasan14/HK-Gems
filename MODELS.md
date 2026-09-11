@@ -1,52 +1,50 @@
-# Assets and implementation status
+# HK GEMS: the firoza journey
 
-The repository did not contain supplied GLB models, scanned mineral textures,
-terrain scans, or an HDR environment. The first four chapters use procedural
-3D assets and locally baked PBR maps. These are approximations of the supplied
-art direction, not photorealistic scans or an exact reproduction.
+The latest reference has six visible compositions: Earth, Discovery, Shedding,
+Refinement, Masterpiece, and Meaning (the silver ring). `lib/journey.ts` owns
+that order and the visible copy. The four chapter links match the reference.
+There are no collection, worn-jewellery, diamond-cut, or ring-assembly stages.
 
-## Active four-scene journey
+## Geometry and rendering
 
-- `lib/mineral.ts`: a 160 × 112 sphere lattice sculpted into a chipped, upright
-  raw rock, with a position/normal morph into a polished elongated oval.
-- `components/canvas/MineralJourney.tsx`: the shared mineral mesh and four
-  separate, closed faceted meshes. Top, bottom, left and right pieces all
-  remain visible in the settled Cut. The final oval adopts a quieter tilt.
-- `public/materials/`: six 1536 × 768 color, roughness and height maps sampled
-  from deterministic 3D noise. Raw and polished maps share the same mineral
-  field. Brown matrix interrupts the turquoise; veins do not follow polygons.
-- `scripts/generate-mineral-textures.mjs`: rebuilds those maps with Node and
-  the existing Sharp dependency. No image service or remote texture request
-  is needed at runtime.
-- The mineral and its cut pieces are opaque. The facets use a stronger local
-  reflection response; the central body never receives glass transmission.
-- `components/canvas/RockyEnvironment.tsx`: displaced terrain, 65 instanced
-  rock fragments, a warm shadow-casting spotlight, a light shaft, and small
-  illuminated dust points. All four scenes retain the environment.
-- `components/canvas/Scene.tsx`: a local light-card environment; no remote HDR
-  is fetched. `CanvasRoot.tsx` uses demand rendering for the first four states
-  and invalidates on scroll, resize and texture readiness.
+- `lib/mineral.ts` sculpts one 192 × 128 spherical lattice with rough,
+  asymmetrically carved, and smooth oval position/normal targets. Discovery
+  turns the raw mineral; refinement polishes it; the final setting uses a
+  shallower cabochon made from the same mineral surface.
+- `MineralJourney.tsx` moves 34 separate, closed rock fragments away from the
+  core during carving. They are not transparent gem facets or sliced caps.
+- `SilverRing.tsx` models a silver bezel, two rolled rims, split shoulders and
+  a continuous band. No part of the metal setting uses a gold material.
+- `public/materials/firoza-albedo.png` is an AI-generated mineral texture,
+  shared by all six states. Roughness is derived from the mineral/matrix mask;
+  raw and polished bump strengths differ. The stone stays opaque: transmission
+  and metalness are zero. `rock-albedo.png` supplies granular rock surface detail.
+  The built-in imagegen tool created both maps; see their README for prompts.
+- `RockyEnvironment.tsx` supplies displaced terrain, 210 instanced broken
+  slabs, a raised ring pedestal, two warm spots, shadow reception, a textured
+  light shaft and small dust particles. No reference image is used at runtime.
+- One fixed R3F canvas renders on demand, invalidating on scroll, resize and
+  texture readiness. A fixed camera preserves the text/stone separation.
 
-## Later chapters retained
+## Scroll behavior
 
-`HeroStone.tsx`, `rawStone.ts`, `gemGeometry.ts`, `cutStages.ts` and
-`gemTextures.ts` support the existing later object/collection presentation.
-Their legacy faceted geometry is not used for the first four compositions.
-`BezelAssembly.tsx` remains a procedural silver assembly, and `Vitrine.tsx`
-retains the six-stone collection. Product copy, specifications and stone
-metadata are preserved. No photographed worn-jewelry asset is supplied.
+Six native sections each occupy one small viewport height (100svh). Each
+section holds its settled state for the first 48% of its scroll distance, then
+transitions to the next. The final state remains settled while the footer
+enters. The scroll store derives geometry, copy visibility and active chapter
+from the same phase; there are no pin spacers or secondary timelines.
 
-## Remaining asset improvements
+Reduced motion disables scroll smoothing and changes directly between the
+settled compositions. Mobile uses a separate vertically stacked composition.
 
-A photographed/scanned turquoise rough and authored oval/shard geometry would
-improve the mineral relief, vein structure and optical detail. Scanned rock
-PBR textures and an authored light volume would improve terrain realism and
-atmospheric depth. The current floor is real geometry with bump detail, but
-remains visibly procedural under close inspection.
+## Asset limitations
 
-## Fonts
+No scanned turquoise model, photographic mineral PBR maps, or terrain scan
+was supplied in the repository. The geometry is procedural and the albedo textures are AI-generated
+approximations, not scans or an exact reproduction of the reference. A detailed authored/scanned raw mineral and photographed rock
+surfaces would improve the remaining differences in cleavage, matrix relief,
+and terrain realism.
 
-Nimbus Roman regular/italic and Noto Nastaliq Urdu are bundled in
-`public/fonts/`, with redistribution licenses alongside them. Inter retains
-its existing Next Google Font configuration and requires network access on
-a cold production build. Browsers receive the self-hosted build output.
+Nimbus Roman regular and true italic are bundled locally. Inter uses the
+existing Next font pipeline and is self-hosted in the generated application;
+a cold build may require network access to download it.

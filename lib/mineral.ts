@@ -21,18 +21,20 @@ export function makeMineralGeometry() {
   for (let i = 0; i < raw.count; i++) {
     const x = raw.getX(i), y = raw.getY(i), z = raw.getZ(i);
     const n = (f: number) => noise(x * f + 5.2, y * f + 3.1, z * f + 7.8) - .5;
-    const chips = Math.abs(n(13)) * .19 - Math.abs(n(32)) * .11;
-    const relief = 1 + n(3) * .48 + n(7) * .23 + chips + n(80) * .025;
+    const chips = Math.abs(n(13)) * .12 - Math.abs(n(32)) * .055;
+    const relief = 1 + n(3) * .34 + n(7) * .17 + chips + n(80) * .025;
     const taper = 1 - y * .19;
-    raw.setXYZ(i, x * relief * .98 * taper, y * relief * 1.42, z * relief * .73);
+    raw.setXYZ(i, x * relief * 1.04 * taper, y * relief * 1.25, z * relief * .73);
     // Asymmetric plane cuts leave an elongated, still rough mineral core.
     let cx = x * .87, cy = y * 1.40, cz = z * .65;
     const clipping = Math.max(1, (cx * .8 + cy * .36 + cz * .35) / .82,
-      (-cx * .85 + cy * .24 + cz * .25) / .83, (-cx * .4 - cy * .58 + cz * .35) / .87);
+      (-cx * .85 + cy * .24 + cz * .25) / .83, (-cx * .4 - cy * .58 + cz * .35) / .87,
+      (cx * .65 + cz * .84) / .49, (-cx * .32 + cz * .95) / .55,
+      (cx * .42 + cy * .62 + cz * .28) / .78);
     const grit = 1 + n(19) * .045 + n(55) * .025;
     cx = cx / clipping * grit; cy = cy / clipping * grit; cz = cz / clipping * grit;
     carved.setXYZ(i, cx, cy, cz);
-    polished.setXYZ(i, x * .81 * (1 - y * .10), y * 1.37, z * .61);
+    polished.setXYZ(i, x * .89 * (1 - y * .10), y * 1.28, z * .61);
   }
   geometry.computeVertexNormals();
   geometry.morphAttributes.position = [carved, polished];
@@ -58,45 +60,43 @@ export function makeFragment(seed: number) {
 }
 
 const textureCache = new Map<string, THREE.Texture>();
-function texture(name: string, color = false) {
-  if (!textureCache.has(name)) {
-    const map = new THREE.TextureLoader().load(`/materials/${name}.jpg`, () => window.dispatchEvent(new Event("mineral-texture-ready")));
+export function mineralTexture(name: string, color = false) {
+  const key = `${name}-${color}`;
+  if (!textureCache.has(key)) {
+    const map = new THREE.TextureLoader().load(`/materials/${name}`, () => window.dispatchEvent(new Event("mineral-texture-ready")));
     map.colorSpace = color ? THREE.SRGBColorSpace : THREE.NoColorSpace;
-    map.wrapS = THREE.RepeatWrapping;
-    map.anisotropy = 4;
-    textureCache.set(name, map);
+    map.wrapS = map.wrapT = THREE.RepeatWrapping;
+    map.anisotropy = 8;
+    textureCache.set(key, map);
   }
-  return textureCache.get(name)!;
+  return textureCache.get(key)!;
 }
 
 export function makeMineralMaterial(raw: boolean) {
   const material = new THREE.MeshPhysicalMaterial({
-    map: texture("polished-color", true),
-    roughnessMap: texture("polished-roughness"),
-    bumpMap: texture(raw ? "raw-height" : "polished-height"),
-    bumpScale: raw ? .12 : .012,
-    roughness: 1,
-    metalness: 0, clearcoat: raw ? .04 : .38, clearcoatRoughness: .2,
-    transmission: 0,
-    envMapIntensity: .45,
+    map: mineralTexture("firoza-albedo.png", true),
+    bumpMap: mineralTexture("firoza-albedo.png"),
+    bumpScale: raw ? .045 : .004,
+    roughness: raw ? .72 : .27,
+    metalness: 0, clearcoat: raw ? .025 : .38, clearcoatRoughness: .2,
+    transmission: 0, envMapIntensity: .5,
   });
   const rawUniform = { value: raw ? 1 : 0 };
-  const rawMap = texture("raw-color", true);
-  const rawRoughness = texture("raw-roughness");
   material.userData.raw = rawUniform;
-  material.onBeforeCompile = (shader) => {
+  material.onBeforeCompile = shader => {
     shader.uniforms.uRaw = rawUniform;
-    shader.uniforms.uRawMap = { value: rawMap };
-    shader.uniforms.uRawRoughness = { value: rawRoughness };
-    shader.fragmentShader = "uniform float uRaw; uniform sampler2D uRawMap; uniform sampler2D uRawRoughness;\n" + shader.fragmentShader;
+    shader.fragmentShader = "uniform float uRaw;\n" + shader.fragmentShader;
     shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `
       #include <map_fragment>
-      diffuseColor.rgb = mix(diffuseColor.rgb, texture2D(uRawMap, vMapUv).rgb, uRaw);
+      float mineralBlue = smoothstep(.02, .20, diffuseColor.b - diffuseColor.r);
+      diffuseColor.rgb *= mix(vec3(1.), vec3(.72, .88, 1.07), mineralBlue);
+      // The same albedo persists through polishing; only the surface finish changes.
+      diffuseColor.rgb *= mix(1., .85 + mineralBlue * .10, uRaw);
     `).replace("#include <roughnessmap_fragment>", `
       #include <roughnessmap_fragment>
-      roughnessFactor = mix(roughnessFactor, texture2D(uRawRoughness, vRoughnessMapUv).g, uRaw);
+      roughnessFactor = mix(mix(.43, .25, mineralBlue), mix(.9, .61, mineralBlue), uRaw);
     `);
   };
-  material.customProgramCacheKey = () => "hk-firoza-v3";
+  material.customProgramCacheKey = () => "hk-firoza-albedo-v4";
   return material;
 }

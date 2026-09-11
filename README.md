@@ -1,36 +1,42 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HK GEMS
 
-## Getting Started
+An interactive turquoise journey built with Next.js, React Three Fiber,
+Three.js, Lenis and Zustand. The six reference states run through rough mineral,
+carving, refinement and a silver-set cabochon.
 
-First, run the development server:
-
-```bash
+```sh
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000. The current Next.js version has its own agent
+instructions and local documentation; read `AGENTS.md` before editing.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```sh
+npm run lint
+npx tsc --noEmit
+npm run build -- --webpack
+```
 
-## Learn More
+Visual verification requires Playwright and Chrome. The script captures each
+settled scene, then checks reverse scrolling, transition visibility, chapter
+navigation, resizing, mobile widths and reduced motion. Supply the latest
+reference image to generate comparisons normalized by width.
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+PLAYWRIGHT_MODULE=/path/to/playwright \
+REFERENCE_IMAGE=/path/to/latest-reference.png \
+node scripts/verify-journey.mjs
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`BASE_URL` and `CHROME_PATH` can override their local defaults. Screenshots
+and the check report are written to `artifacts/new-journey/`. These are individual
+viewport captures because full-page screenshots repeat a fixed WebGL canvas.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+`lib/journey.ts` defines the target copy and order. `lib/sceneTimeline.ts` owns
+the phase mapping. See `MODELS.md` for assets, rendering and remaining realism
+limitations. The generated material assets and their exact prompts are
+documented in `public/materials/README.md`; no generation service is called
+at runtime.

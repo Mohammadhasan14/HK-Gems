@@ -31,21 +31,21 @@ export function MineralJourney() {
   useFrame(() => {
     if (!group.current || !stone.current || !pose.current || !setting.current) return;
     const phase = useScroll.getState().scene;
-    const placement = stagePlacement(size.width, size.height);
+    const placement = stagePlacement(size.width, size.height, phase);
     const polish = smooth(2, 3, phase), carved = smooth(1, 2, phase) * (1 - polish);
     const ring = smooth(4, 5, phase);
     group.current.position.set(placement.mobile ? -.1 : sample([.98, .93, .96, .8, 1.04, 1.12], phase), placement.centerY, 0);
-    group.current.scale.setScalar(placement.scale * sample([1.04, 1.07, 1.01, .96, .98, .94], phase));
+    group.current.scale.setScalar(placement.scale * sample([1.04, 1.16, 1.03, 1.03, 1.07, .94], phase));
     pose.current.rotation.set(sample([.06, -.07, .06, .04, .02, .12], phase),
-      sample([.12, .60, .2, .16, .09, -.64], phase), sample([-.09, -.31, -.1, -.27, .015, -.34], phase));
-    pose.current.position.y = sample([.06, -.15, -.16, -.24, -.2, -.24], phase);
+      sample([.12, .60, .48, .16, .09, -.85], phase), sample([-.09, -.39, -.16, -.27, .015, -.52], phase));
+    pose.current.position.y = sample([-.40, -.25, -.16, -.24, -.14, .17], phase);
     stone.current.morphTargetInfluences![0] = carved;
     stone.current.morphTargetInfluences![1] = polish;
     stone.current.scale.set(1, sample([1, .93, 1, 1, 1, 1], phase), lerp(1, .37, ring));
     stone.current.position.z = ring * .13;
     const material = stone.current.material as THREE.MeshPhysicalMaterial;
     material.userData.raw.value = 1 - polish;
-    material.bumpScale = lerp(.12, .011, polish);
+    material.bumpScale = lerp(.035, .004, polish);
     material.clearcoat = lerp(.025, .35, polish);
     setting.current.visible = ring > .002;
     setting.current.scale.setScalar(Math.max(.001, ring));
@@ -67,7 +67,7 @@ export function MineralJourney() {
   });
   return <group ref={group} name="firoza-journey">
     <group ref={pose}>
-      <mesh ref={stone} name="natural-turquoise" geometry={assets.stone} material={assets.body} castShadow receiveShadow />
+      <mesh ref={stone} name="natural-turquoise" args={[assets.stone, assets.body]} castShadow receiveShadow />
       <group ref={setting} visible={false}><SilverRing /></group>
     </group>
     {FRAGMENTS.map((_, i) => <mesh key={i} name={`carving-fragment-${i}`}

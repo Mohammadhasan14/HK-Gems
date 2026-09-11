@@ -7,7 +7,7 @@ export function Scene() {
   return <>
     <CameraRig />
     <ambientLight intensity={.15} />
-    <directionalLight position={[-3, 5, 5]} color="#e5eeec" intensity={3.1} />
+    <directionalLight position={[-3, 5, 5]} color="#e5eeec" intensity={2.5} />
     <directionalLight position={[1, 5, -3]} color="#ffe0af" intensity={3.6} />
     <Environment resolution={128} frames={1}>
       <Lightformer position={[-4, 4, 5]} scale={[1.3, 4, 1]} intensity={3} color="#fff7ea" target={[0,0,0]} />

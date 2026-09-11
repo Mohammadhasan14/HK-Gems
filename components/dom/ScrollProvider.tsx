@@ -10,7 +10,13 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
       const height = document.getElementById("earth")?.offsetHeight || window.innerHeight;
       useScroll.getState().setScroll(window.scrollY / height, media.matches);
     };
-    const resize = () => { lenis.resize(); sync(); };
+    let previousHeight = document.getElementById("earth")?.offsetHeight || window.innerHeight;
+    const resize = () => {
+      const height = document.getElementById("earth")?.offsetHeight || window.innerHeight;
+      const position = window.scrollY / previousHeight;
+      previousHeight = height;
+      lenis.resize(); lenis.scrollTo(position * height, { immediate: true }); sync();
+    };
     const motion = () => { lenis.options.smoothWheel = !media.matches; sync(); };
     const anchor = (event: MouseEvent) => {
       const link = (event.target as Element).closest<HTMLAnchorElement>('a[href^="#"]');
