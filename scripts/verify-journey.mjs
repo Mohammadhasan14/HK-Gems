@@ -11,7 +11,7 @@ const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODUL
 const ids = ['earth','discovery','shedding','refinement','masterpiece','meaning'];
 const output = path.resolve('artifacts/new-journey');
 await fs.mkdir(output,{recursive:true});
-const browser = await chromium.launch({executablePath:process.env.CHROME_PATH || '/opt/google/chrome/chrome',headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader']});
+const browser = await chromium.launch({executablePath:process.env.CHROME_PATH || '/opt/google/chrome/chrome',headless:process.env.BROWSER_HEADED !== "1",args:['--no-sandbox','--enable-unsafe-swiftshader']});
 const page = await browser.newPage({viewport:{width:1000,height:596},deviceScaleFactor:1});
 const errors=[], results=[];
 page.on('pageerror',e=>{if(!errors.includes(e.message)) errors.push(e.message)});
@@ -55,15 +55,19 @@ try {
    for(const [label,id] of [['02 Discovery','discovery'],['03 Shedding','shedding'],['04 A Masterpiece','masterpiece']]){
      await settle('earth');await page.getByRole('button',{name:label,exact:true}).click();
      await page.waitForFunction(id=>Math.abs(scrollY-document.getElementById(id).offsetTop)<2,id,{timeout:15000});
+     // Reaching the last pixel can precede Lenis' completion callback. Let the
+     // navigation finish before issuing a native jump for the next assertion.
+     await page.waitForTimeout(500);
      assert.deepEqual((await state()).copy,[id]);
    }
    await page.evaluate(()=>scrollTo(0,document.documentElement.scrollHeight));await page.waitForTimeout(650);await capture('footer');
    await page.locator('.site-footer .wordmark').click();
    await page.waitForFunction(()=>scrollY<2,null,{timeout:15000});
+   await page.waitForTimeout(500);
    assert.deepEqual((await state()).copy,['earth']);
    const brokenLinks=await page.evaluate(()=>[...document.querySelectorAll('a[href^="#"]')].filter(a=>!document.getElementById(a.getAttribute('href').slice(1))).length);
    assert.equal(brokenLinks,0);
-   for(const viewport of [{width:1440,height:900},{width:390,height:844},{width:360,height:640},{width:320,height:568}]){
+   for(const viewport of [{width:1440,height:900},{width:320,height:568},{width:390,height:844},{width:360,height:640}]){
      console.log('Viewport',viewport); await settle('masterpiece'); await page.setViewportSize(viewport);await page.waitForTimeout(500);
      assert.deepEqual((await state()).copy,['masterpiece'],'Resize should preserve the current chapter');
      for(const id of ids){

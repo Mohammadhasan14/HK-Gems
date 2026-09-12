@@ -17,7 +17,10 @@ const random = (i: number) => { const x = Math.sin(i * 173.31 + 31.7) * 43758.54
 const FRAGMENTS = Array.from({ length: 34 }, (_, i) => {
   const angle = i * 2.39996;
   const radius = 1.25 + random(i) * .62;
-  return { x: Math.cos(angle) * radius, y: Math.sin(angle) * radius * 1.05 + .17,
+  const y = Math.sin(angle) * radius * 1.05 + .17;
+  // Reserve the headline's upper-left area while retaining loose lower chips.
+  const x = y > .4 && y < 1.35 ? Math.max(-1.05, Math.cos(angle) * radius) : Math.cos(angle) * radius;
+  return { x, y,
     z: -.18 + random(i + 55) * .5, scale: i < 13 ? .12 + random(i + 10) * .15 : .035 + random(i + 8) * .075 };
 });
 export function MineralJourney() {
@@ -55,12 +58,16 @@ export function MineralJourney() {
     pieces.current.forEach((mesh, i) => {
       if (!mesh) return;
       const f = FRAGMENTS[i];
-      const looseDiscovery = i < 3 ? smooth(.4, 1, phase) * (1 - explosion) : 0;
-      const visible = Math.max(explosion * (1 - removal), looseDiscovery);
+      const discovery = i < 3 ? smooth(.4, 1, phase) : 0;
+      const visible = Math.max(explosion, discovery) * (1 - removal);
       mesh.visible = visible > .005;
       const spread = explosion * (1 + removal * .35);
-      mesh.position.set(lerp(.35 + f.x * .3, f.x, spread), lerp(f.y * .4, f.y, spread) - removal * .5, f.z);
-      if (looseDiscovery > .5) mesh.position.set(1.35 + i * .13, -.45 - i * .4, -.2);
+      // The first three chips travel continuously from their Discovery positions.
+      // A threshold-based position swap here caused a visible mid-scroll jump.
+      const startX = lerp(.35 + f.x * .3, 1.35 + i * .13, discovery);
+      const startY = lerp(f.y * .4, -.45 - i * .4, discovery);
+      const startZ = lerp(f.z, -.2, discovery);
+      mesh.position.set(lerp(startX, f.x, spread), lerp(startY, f.y, spread) - removal * .5, lerp(startZ, f.z, explosion));
       mesh.scale.setScalar(f.scale * visible);
       mesh.rotation.set(i * .71 + spread * .4, i * 1.13 + spread * .5, i * .51 - spread * .3);
     });

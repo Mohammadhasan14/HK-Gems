@@ -7,7 +7,7 @@ There are no collection, worn-jewellery, diamond-cut, or ring-assembly stages.
 
 ## Geometry and rendering
 
-- `lib/mineral.ts` sculpts one 192 × 128 spherical lattice with rough,
+- `lib/mineral.ts` sculpts one 128 × 88 spherical lattice with rough,
   asymmetrically carved, and smooth oval position/normal targets. Discovery
   turns the raw mineral; refinement polishes it; the final setting uses a
   shallower cabochon made from the same mineral surface.
@@ -24,12 +24,13 @@ There are no collection, worn-jewellery, diamond-cut, or ring-assembly stages.
   slabs, a raised ring pedestal, two warm spots, shadow reception, a textured
   light shaft and small dust particles. No reference image is used at runtime.
 - One fixed R3F canvas renders on demand, invalidating on scroll, resize and
-  texture readiness. A fixed camera preserves the text/stone separation.
+  texture readiness. Hidden materials are precompiled before their transitions
+  to reduce first-use shader stalls. A fixed camera preserves the text/stone separation.
 
 ## Scroll behavior
 
 Six native sections each occupy one small viewport height (100svh). Each
-section holds its settled state for the first 48% of its scroll distance, then
+section holds its settled state for the first 28% of its scroll distance, then
 transitions to the next. The final state remains settled while the footer
 enters. The scroll store derives geometry, copy visibility and active chapter
 from the same phase; there are no pin spacers or secondary timelines.

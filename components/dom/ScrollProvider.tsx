@@ -6,14 +6,21 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const lenis = getLenis();
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    let previousHeight = document.getElementById("earth")?.offsetHeight || window.innerHeight;
+    let viewportPosition = window.scrollY / previousHeight;
+    // Lenis forwards native scrolling too. Its fractional position avoids
+    // competing integer window-scroll updates during a smoothed wheel gesture.
     const sync = () => {
       const height = document.getElementById("earth")?.offsetHeight || window.innerHeight;
-      useScroll.getState().setScroll(window.scrollY / height, media.matches);
+      // A smaller viewport can clamp native scroll before the resize event.
+      // Keep the last valid chapter position until resize has restored it.
+      if (height !== previousHeight) return;
+      viewportPosition = lenis.animatedScroll / height;
+      useScroll.getState().setScroll(viewportPosition, media.matches);
     };
-    let previousHeight = document.getElementById("earth")?.offsetHeight || window.innerHeight;
     const resize = () => {
       const height = document.getElementById("earth")?.offsetHeight || window.innerHeight;
-      const position = window.scrollY / previousHeight;
+      const position = viewportPosition;
       previousHeight = height;
       lenis.resize(); lenis.scrollTo(position * height, { immediate: true }); sync();
     };
@@ -29,14 +36,13 @@ export function ScrollProvider({ children }: { children: React.ReactNode }) {
     const raf = (time: number) => { lenis.raf(time); frame = requestAnimationFrame(raf); };
     frame = requestAnimationFrame(raf);
     lenis.on("scroll", sync);
-    window.addEventListener("scroll", sync, { passive: true });
     window.addEventListener("resize", resize);
     document.addEventListener("click", anchor);
     media.addEventListener("change", motion);
     sync();
     return () => {
       cancelAnimationFrame(frame); lenis.off("scroll", sync);
-      window.removeEventListener("scroll", sync); window.removeEventListener("resize", resize);
+      window.removeEventListener("resize", resize);
       document.removeEventListener("click", anchor); media.removeEventListener("change", motion);
       destroyLenis();
     };

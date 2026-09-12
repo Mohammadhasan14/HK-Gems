@@ -14,7 +14,7 @@ function terrainHeight(x: number, z: number) {
     + noise(x * 12, z * 13, 9) * .085 + noise(x * 35, z * 35, 2) * .023;
 }
 function makeTerrain() {
-  const geometry = new THREE.PlaneGeometry(24, 18, 280, 220);
+  const geometry = new THREE.PlaneGeometry(24, 18, 180, 140);
   geometry.rotateX(-Math.PI / 2);
   const uv = geometry.attributes.uv;
   for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i) * 8, uv.getY(i) * 8);
@@ -29,7 +29,7 @@ function makeTerrain() {
   geometry.computeVertexNormals(); return geometry;
 }
 function makeRockGeometry() {
-  const geometry = mergeVertices(new THREE.IcosahedronGeometry(1, 6).deleteAttribute("normal"));
+  const geometry = mergeVertices(new THREE.IcosahedronGeometry(1, 4).deleteAttribute("normal"));
   const p = geometry.attributes.position;
   for (let i = 0; i < p.count; i++) {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
@@ -39,20 +39,6 @@ function makeRockGeometry() {
     geometry.attributes.uv.setXY(i, x * .5 + .5, z * .5 + .5);
   }
   geometry.computeVertexNormals(); return geometry;
-}
-function makeGrain() {
-  const size = 512, data = new Uint8Array(size * size * 4);
-  for (let y = 0; y < size; y++) for (let x = 0; x < size; x++) {
-    const i = (y * size + x) * 4;
-    const field = noise(x / 29, y / 14, 2);
-    const crack = 1 - smooth(.015, .045, Math.abs(field - .5));
-    const n = noise(x / 5, y / 5, 5) * .45 + noise(x / 1.4, y / 1.4, 8) * .3 + .25 - crack * .4;
-    data[i] = data[i + 1] = data[i + 2] = Math.max(0, n * 255); data[i + 3] = 255;
-  }
-  const texture = new THREE.DataTexture(data, size, size);
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.repeat.set(7, 7);
-  texture.magFilter = THREE.LinearFilter; texture.minFilter = THREE.LinearMipmapLinearFilter;
-  texture.generateMipmaps = true; texture.needsUpdate = true; return texture;
 }
 /** Fade distant ground and its specular response into darkness, so no horizon
  * band crosses the copy. Instanced slabs and terrain share this world-space fade. */
@@ -79,6 +65,9 @@ function shadeTerrain(shader: THREE.WebGLProgramParametersWithUniforms) {
       (vGroundPosition.xz - vec2(1., .5)) * vec2(.38, .10)));
     float crevice = mix(.18, 1., smoothstep(.008, .075, rockColor.r));
     outgoingLight *= depthFade * pool * crevice * .9;
+    // Fading color alone leaves an opaque black silhouette across the shaft.
+    // Let distant terrain dissolve into the atmosphere as well.
+    diffuseColor.a *= depthFade;
     #include <opaque_fragment>
   `);
 }
@@ -101,7 +90,7 @@ export function RockyEnvironment() {
   const { size } = useThree();
   const assets = useMemo(() => {
     const target = new THREE.Object3D(); target.position.set(.9, -2, 0);
-    const grain = makeGrain(), rock = makeRockGeometry();
+    const rock = makeRockGeometry();
     const albedo = mineralTexture("rock-albedo.png", true), height = mineralTexture("rock-albedo.png");
     const material = new THREE.MeshStandardMaterial({ color: "#a6a29a", map: albedo, roughness: .85, bumpMap: height, bumpScale: .3 });
     material.onBeforeCompile = shadeTerrain;
@@ -127,10 +116,10 @@ export function RockyEnvironment() {
     }
     const dust = new THREE.BufferGeometry();
     dust.setAttribute("position", new THREE.Float32BufferAttribute(positions, 3)); dust.setAttribute("color", new THREE.Float32BufferAttribute(colors, 3));
-    return { terrain: makeTerrain(), rock, material, grain, albedo, height, dust, target, rocks };
+    return { terrain: makeTerrain(), rock, material, albedo, height, dust, target, rocks };
   }, []);
   useEffect(() => () => {
-    assets.terrain.dispose(); assets.grain.dispose(); assets.dust.dispose(); assets.rock.dispose(); assets.material.dispose();
+    assets.terrain.dispose(); assets.dust.dispose(); assets.rock.dispose(); assets.material.dispose();
   }, [assets]);
   useFrame(() => {
     if (!group.current || !pedestal.current) return;
@@ -142,7 +131,7 @@ export function RockyEnvironment() {
   });
   return <group ref={group} name="rocky-environment">
     <mesh geometry={assets.terrain} position={[0, -2.4, 0]} receiveShadow>
-      <meshStandardMaterial vertexColors map={assets.albedo} roughness={.83} bumpMap={assets.height} bumpScale={.28}
+      <meshStandardMaterial transparent vertexColors map={assets.albedo} roughness={.83} bumpMap={assets.height} bumpScale={.28}
         onBeforeCompile={shadeTerrain} customProgramCacheKey={() => "rock-distance-fade"} />
     </mesh>
     <primitive object={assets.rocks} />

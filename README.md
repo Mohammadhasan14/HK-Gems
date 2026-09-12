@@ -34,9 +34,16 @@ node scripts/verify-journey.mjs
 `BASE_URL` and `CHROME_PATH` can override their local defaults. Screenshots
 and the check report are written to `artifacts/new-journey/`. These are individual
 viewport captures because full-page screenshots repeat a fixed WebGL canvas.
+Set `BROWSER_HEADED=1` to run either verification script in a visible Chrome
+window with the machine's GPU when a desktop session is available.
 
 `lib/journey.ts` defines the target copy and order. `lib/sceneTimeline.ts` owns
 the phase mapping. See `MODELS.md` for assets, rendering and remaining realism
 limitations. The generated material assets and their exact prompts are
 documented in `public/materials/README.md`; no generation service is called
 at runtime.
+
+Verify actual wheel interpolation and save a forward/reverse video with
+`node scripts/verify-scroll-motion.mjs` (the same Playwright and BASE_URL
+variables apply). The recording and per-frame position report are saved beside
+the scene screenshots.

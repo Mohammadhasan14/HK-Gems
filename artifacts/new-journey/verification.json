@@ -1,12 +1,5 @@
 {
-  "errors": [
-    "WebSocket connection to 'ws://localhost:3000/_next/hmr?id=Zm3AI7MlH9-HV9VPVJYQU' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
-    "WebSocket connection to 'ws://localhost:3000/_next/hmr?id=Zm3AI7MlH9-HV9VPVJYQU' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
-    "WebSocket connection to 'ws://localhost:3000/_next/hmr?id=Zm3AI7MlH9-HV9VPVJYQU' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
-    "WebSocket connection to 'ws://localhost:3000/_next/hmr?id=Zm3AI7MlH9-HV9VPVJYQU' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
-    "WebSocket connection to 'ws://localhost:3000/_next/hmr?id=Zm3AI7MlH9-HV9VPVJYQU' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED",
-    "WebSocket connection to 'ws://localhost:3000/_next/hmr?id=Zm3AI7MlH9-HV9VPVJYQU' failed: Error in connection establishment: net::ERR_CONNECTION_REFUSED"
-  ],
+  "errors": [],
   "results": [
     {
       "id": "earth",
@@ -266,6 +259,126 @@
         "earth"
       ],
       "scrollY": 0,
+      "viewport": "320x568"
+    },
+    {
+      "id": "discovery",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "discovery"
+      ],
+      "scrollY": 568,
+      "viewport": "320x568"
+    },
+    {
+      "id": "shedding",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "shedding"
+      ],
+      "scrollY": 1136,
+      "viewport": "320x568"
+    },
+    {
+      "id": "refinement",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "refinement"
+      ],
+      "scrollY": 1704,
+      "viewport": "320x568"
+    },
+    {
+      "id": "masterpiece",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "masterpiece"
+      ],
+      "scrollY": 2272,
+      "viewport": "320x568"
+    },
+    {
+      "id": "meaning",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "meaning"
+      ],
+      "scrollY": 2840,
+      "viewport": "320x568"
+    },
+    {
+      "id": "earth",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        "earth"
+      ],
+      "scrollY": 0,
       "viewport": "390x844"
     },
     {
@@ -487,126 +600,6 @@
       ],
       "scrollY": 3200,
       "viewport": "360x640"
-    },
-    {
-      "id": "earth",
-      "canvases": 1,
-      "sections": [
-        "earth",
-        "discovery",
-        "shedding",
-        "refinement",
-        "masterpiece",
-        "meaning"
-      ],
-      "rails": 1,
-      "pinSpacers": 0,
-      "overflow": false,
-      "copy": [
-        "earth"
-      ],
-      "scrollY": 0,
-      "viewport": "320x568"
-    },
-    {
-      "id": "discovery",
-      "canvases": 1,
-      "sections": [
-        "earth",
-        "discovery",
-        "shedding",
-        "refinement",
-        "masterpiece",
-        "meaning"
-      ],
-      "rails": 1,
-      "pinSpacers": 0,
-      "overflow": false,
-      "copy": [
-        "discovery"
-      ],
-      "scrollY": 568,
-      "viewport": "320x568"
-    },
-    {
-      "id": "shedding",
-      "canvases": 1,
-      "sections": [
-        "earth",
-        "discovery",
-        "shedding",
-        "refinement",
-        "masterpiece",
-        "meaning"
-      ],
-      "rails": 1,
-      "pinSpacers": 0,
-      "overflow": false,
-      "copy": [
-        "shedding"
-      ],
-      "scrollY": 1136,
-      "viewport": "320x568"
-    },
-    {
-      "id": "refinement",
-      "canvases": 1,
-      "sections": [
-        "earth",
-        "discovery",
-        "shedding",
-        "refinement",
-        "masterpiece",
-        "meaning"
-      ],
-      "rails": 1,
-      "pinSpacers": 0,
-      "overflow": false,
-      "copy": [
-        "refinement"
-      ],
-      "scrollY": 1704,
-      "viewport": "320x568"
-    },
-    {
-      "id": "masterpiece",
-      "canvases": 1,
-      "sections": [
-        "earth",
-        "discovery",
-        "shedding",
-        "refinement",
-        "masterpiece",
-        "meaning"
-      ],
-      "rails": 1,
-      "pinSpacers": 0,
-      "overflow": false,
-      "copy": [
-        "masterpiece"
-      ],
-      "scrollY": 2272,
-      "viewport": "320x568"
-    },
-    {
-      "id": "meaning",
-      "canvases": 1,
-      "sections": [
-        "earth",
-        "discovery",
-        "shedding",
-        "refinement",
-        "masterpiece",
-        "meaning"
-      ],
-      "rails": 1,
-      "pinSpacers": 0,
-      "overflow": false,
-      "copy": [
-        "meaning"
-      ],
-      "scrollY": 2840,
-      "viewport": "320x568"
     }
   ]
 }

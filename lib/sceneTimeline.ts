@@ -9,7 +9,7 @@ export function scenePhase(viewports: number, reducedMotion = false) {
   const p = Math.max(0, Math.min(SCENES.length - 1, viewports));
   const index = Math.floor(p);
   return reducedMotion ? Math.min(5, Math.floor(p + .2))
-    : index + smooth(.48, 1, p - index);
+    : index + smooth(.28, 1, p - index);
 }
 export function copyOpacity(phase: number, index: number) {
   return 1 - smooth(.06, .43, Math.abs(phase - index));

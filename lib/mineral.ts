@@ -15,7 +15,7 @@ export function noise(x: number, y: number, z: number): number {
 /** One high-resolution lattice: rough, hand-carved and cabochon targets.
  * Uneven clipped planes describe removed rock, never a brilliant diamond cut. */
 export function makeMineralGeometry() {
-  const geometry = new THREE.SphereGeometry(1, 192, 128);
+  const geometry = new THREE.SphereGeometry(1, 128, 88);
   const raw = geometry.attributes.position as THREE.BufferAttribute;
   const carved = raw.clone(), polished = raw.clone();
   for (let i = 0; i < raw.count; i++) {
