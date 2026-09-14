@@ -1,0 +1,790 @@
+{
+  "errors": [],
+  "footer": {
+    "stageBottom": 770,
+    "footerTop": 770,
+    "canvasBottom": 770
+  },
+  "results": [
+    {
+      "id": "earth",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "01 The Earth",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "earth",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 0,
+      "viewport": "1440x900",
+      "fontSize": "18px"
+    },
+    {
+      "id": "discovery",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "02 Discovery",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "discovery",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 900,
+      "viewport": "1440x900",
+      "fontSize": "18px"
+    },
+    {
+      "id": "shedding",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "03 Shedding",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "shedding",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1800,
+      "viewport": "1440x900",
+      "fontSize": "18px"
+    },
+    {
+      "id": "refinement",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "04 Refinement",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "refinement",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 2700,
+      "viewport": "1440x900",
+      "fontSize": "18px"
+    },
+    {
+      "id": "masterpiece",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "05 Masterpiece",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "masterpiece",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 3600,
+      "viewport": "1440x900",
+      "fontSize": "18px"
+    },
+    {
+      "id": "meaning",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "06 Meaning",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "meaning",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 4500,
+      "viewport": "1440x900",
+      "fontSize": "18px"
+    },
+    {
+      "id": "earth",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "01 The Earth",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "earth",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 0,
+      "viewport": "1000x650",
+      "fontSize": "16px"
+    },
+    {
+      "id": "discovery",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "02 Discovery",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "discovery",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 650,
+      "viewport": "1000x650",
+      "fontSize": "16px"
+    },
+    {
+      "id": "shedding",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "03 Shedding",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "shedding",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1300,
+      "viewport": "1000x650",
+      "fontSize": "16px"
+    },
+    {
+      "id": "refinement",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "04 Refinement",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "refinement",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1950,
+      "viewport": "1000x650",
+      "fontSize": "16px"
+    },
+    {
+      "id": "masterpiece",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "05 Masterpiece",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "masterpiece",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 2600,
+      "viewport": "1000x650",
+      "fontSize": "16px"
+    },
+    {
+      "id": "meaning",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "06 Meaning",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "meaning",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 3250,
+      "viewport": "1000x650",
+      "fontSize": "16px"
+    },
+    {
+      "id": "earth",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "01 The Earth",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "earth",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 0,
+      "viewport": "390x844",
+      "fontSize": "14px"
+    },
+    {
+      "id": "discovery",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "02 Discovery",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "discovery",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 844,
+      "viewport": "390x844",
+      "fontSize": "14px"
+    },
+    {
+      "id": "shedding",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "03 Shedding",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "shedding",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1688,
+      "viewport": "390x844",
+      "fontSize": "14px"
+    },
+    {
+      "id": "refinement",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "04 Refinement",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "refinement",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 2532,
+      "viewport": "390x844",
+      "fontSize": "14px"
+    },
+    {
+      "id": "masterpiece",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "05 Masterpiece",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "masterpiece",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 3376,
+      "viewport": "390x844",
+      "fontSize": "14px"
+    },
+    {
+      "id": "meaning",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "06 Meaning",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "meaning",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 4220,
+      "viewport": "390x844",
+      "fontSize": "14px"
+    },
+    {
+      "id": "earth",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "01 The Earth",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "earth",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 0,
+      "viewport": "320x568",
+      "fontSize": "13px"
+    },
+    {
+      "id": "discovery",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "02 Discovery",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "discovery",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 568,
+      "viewport": "320x568",
+      "fontSize": "13px"
+    },
+    {
+      "id": "shedding",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "03 Shedding",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "shedding",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1136,
+      "viewport": "320x568",
+      "fontSize": "13px"
+    },
+    {
+      "id": "refinement",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "04 Refinement",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "refinement",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1704,
+      "viewport": "320x568",
+      "fontSize": "13px"
+    },
+    {
+      "id": "masterpiece",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "05 Masterpiece",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "masterpiece",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 2272,
+      "viewport": "320x568",
+      "fontSize": "13px"
+    },
+    {
+      "id": "meaning",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "06 Meaning",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "meaning",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 2840,
+      "viewport": "320x568",
+      "fontSize": "13px"
+    },
+    {
+      "id": "earth",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "01 The Earth",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "earth",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 0,
+      "viewport": "360x640",
+      "fontSize": "13px"
+    },
+    {
+      "id": "discovery",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "02 Discovery",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "discovery",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 640,
+      "viewport": "360x640",
+      "fontSize": "13px"
+    },
+    {
+      "id": "shedding",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "03 Shedding",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "shedding",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1280,
+      "viewport": "360x640",
+      "fontSize": "13px"
+    },
+    {
+      "id": "refinement",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "04 Refinement",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "refinement",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 1920,
+      "viewport": "360x640",
+      "fontSize": "13px"
+    },
+    {
+      "id": "masterpiece",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "05 Masterpiece",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "masterpiece",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 2560,
+      "viewport": "360x640",
+      "fontSize": "13px"
+    },
+    {
+      "id": "meaning",
+      "canvases": 1,
+      "sections": [
+        "earth",
+        "discovery",
+        "shedding",
+        "refinement",
+        "masterpiece",
+        "meaning"
+      ],
+      "rails": 1,
+      "stops": 6,
+      "active": "06 Meaning",
+      "pinSpacers": 0,
+      "overflow": false,
+      "copy": [
+        {
+          "id": "meaning",
+          "opacity": 1
+        }
+      ],
+      "scrollY": 3200,
+      "viewport": "360x640",
+      "fontSize": "13px"
+    }
+  ]
+}

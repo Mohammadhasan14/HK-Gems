@@ -35,7 +35,8 @@ function makeRockGeometry() {
     const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
     const r = .75 + noise(x * 3, y * 5, z * 3) * .32 + noise(x * 19, y * 19, z * 19) * .06;
     // Broken slabs with angular cleavage, rather than rounded river pebbles.
-    p.setXYZ(i, x * r, Math.min(.48, y * r) + Math.abs(noise(x * 13, y * 13, z * 13) - .5) * .22, z * r);
+    const crown = .34 + noise(x * 4, z * 4, 2) * .18;
+    p.setXYZ(i, x * r, Math.min(crown, y * r) + Math.abs(noise(x * 13, y * 13, z * 13) - .5) * .16, z * r);
     geometry.attributes.uv.setXY(i, x * .5 + .5, z * .5 + .5);
   }
   geometry.computeVertexNormals(); return geometry;
@@ -61,10 +62,10 @@ function shadeTerrain(shader: THREE.WebGLProgramParametersWithUniforms) {
   `);
   shader.fragmentShader = shader.fragmentShader.replace("#include <opaque_fragment>", `
     float depthFade = smoothstep(-2., 1.4, vGroundPosition.z);
-    float pool = .12 + .88 * exp(-dot((vGroundPosition.xz - vec2(1., .5)) * vec2(.38, .10),
-      (vGroundPosition.xz - vec2(1., .5)) * vec2(.38, .10)));
+    float pool = .10 + .90 * exp(-dot((vGroundPosition.xz - vec2(1.6, .5)) * vec2(.42, .13),
+      (vGroundPosition.xz - vec2(1.6, .5)) * vec2(.42, .13)));
     float crevice = mix(.18, 1., smoothstep(.008, .075, rockColor.r));
-    outgoingLight *= depthFade * pool * crevice * .9;
+    outgoingLight *= depthFade * pool * crevice * .8 * (1. - smoothstep(2.5, 7., vGroundPosition.z)*.65);
     // Fading color alone leaves an opaque black silhouette across the shaft.
     // Let distant terrain dissolve into the atmosphere as well.
     diffuseColor.a *= depthFade;
@@ -86,13 +87,13 @@ const shaftFragment = /* glsl */`
  }
 `;
 export function RockyEnvironment() {
-  const group = useRef<THREE.Group>(null), pedestal = useRef<THREE.Mesh>(null);
+  const group = useRef<THREE.Group>(null), pedestal = useRef<THREE.Mesh>(null), spotlight = useRef<THREE.SpotLight>(null), rocks = useRef<THREE.InstancedMesh>(null);
   const { size } = useThree();
   const assets = useMemo(() => {
-    const target = new THREE.Object3D(); target.position.set(.9, -2, 0);
+    const target = new THREE.Object3D(); target.position.set(1.6, -2, 0);
     const rock = makeRockGeometry();
     const albedo = mineralTexture("rock-albedo.png", true), height = mineralTexture("rock-albedo.png");
-    const material = new THREE.MeshStandardMaterial({ color: "#a6a29a", map: albedo, roughness: .85, bumpMap: height, bumpScale: .3 });
+    const material = new THREE.MeshStandardMaterial({ color: "#777b73", map: albedo, roughness: .92, bumpMap: height, bumpScale: .24 });
     material.onBeforeCompile = shadeTerrain;
     material.customProgramCacheKey = () => "rock-distance-fade";
     const rocks = new THREE.InstancedMesh(rock, material, 210), transform = new THREE.Object3D();
@@ -107,7 +108,7 @@ export function RockyEnvironment() {
     }
     rocks.castShadow = rocks.receiveShadow = true;
     const positions = [], colors = [];
-    for (let i = 0; i < 240; i++) {
+    for (let i = 0; i < 160; i++) {
       const y = rnd(i * 3) * 7 - 2, spread = .7 + (5 - y) * .13;
       const x = .8 + (rnd(i * 3 + 1) - .5) * spread * 2;
       positions.push(x, y, -1 - rnd(i * 3 + 2) * 3);
@@ -124,17 +125,23 @@ export function RockyEnvironment() {
   useFrame(() => {
     if (!group.current || !pedestal.current) return;
     const { scene } = useScroll.getState(), { mobile, centerY, scale } = stagePlacement(size.width, size.height, scene);
-    group.current.position.set(mobile ? -.95 : 0, mobile ? centerY + 2.1 - scale * 1.65 : 0, 0);
+    group.current.position.set(mobile ? -1.55 : 0, mobile ? centerY + 2.1 - scale * 1.6 : 0, 0);
     const raised = smooth(4, 5, scene);
-    pedestal.current.position.set(1.05, -2.26 + raised * .56, .22);
-    pedestal.current.scale.set(1.45 + raised * .45, .33 + raised * .4, 1.08 + raised * .25);
+    if(rocks.current){
+      rocks.current.position.x = -.55*smooth(0,1,scene)+.95*smooth(1,3,scene)-.65*smooth(3,5,scene);
+      rocks.current.rotation.y = smooth(1,4,scene)*.055;
+    }
+    pedestal.current.position.set(1.55, -2.24 + raised * .46, .12);
+    pedestal.current.rotation.y = .12 + smooth(2,5,scene)*.35;
+    pedestal.current.scale.set(1.45 + raised * .3, .30 + raised * .23, 1.03 + raised * .16);
+    if(spotlight.current) spotlight.current.intensity=170+smooth(2,4,scene)*30-raised*35;
   });
   return <group ref={group} name="rocky-environment">
     <mesh geometry={assets.terrain} position={[0, -2.4, 0]} receiveShadow>
       <meshStandardMaterial transparent vertexColors map={assets.albedo} roughness={.83} bumpMap={assets.height} bumpScale={.28}
         onBeforeCompile={shadeTerrain} customProgramCacheKey={() => "rock-distance-fade"} />
     </mesh>
-    <primitive object={assets.rocks} />
+    <primitive ref={rocks} object={assets.rocks} />
     <mesh ref={pedestal} geometry={assets.rock} material={assets.material} castShadow receiveShadow />
     <mesh position={[.4, 5.5, -5]}>
       <planeGeometry args={[11, 24]} />
@@ -147,8 +154,8 @@ export function RockyEnvironment() {
         fragmentShader="varying vec3 vColor;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vColor,(1.-smoothstep(.06,.5,d))*.65);}" />
     </points>
     <primitive object={assets.target} />
-    <spotLight position={[.1, 6, 1]} target={assets.target} color="#ffe1aa" intensity={330} angle={.39} penumbra={.8}
+    <spotLight ref={spotlight} position={[.6, 6, 1]} target={assets.target} color="#f4dfba" intensity={170} angle={.43} penumbra={1}
       castShadow shadow-mapSize={[1024,1024]} shadow-bias={-.0002} shadow-normalBias={.02} shadow-radius={4} />
-    <spotLight position={[.8, .1, -2.4]} target={assets.target} color="#f7d7a2" intensity={95} angle={.95} penumbra={1} />
+    <spotLight position={[1.5, .1, -2.4]} target={assets.target} color="#e5d5b8" intensity={65} angle={.95} penumbra={1} />
   </group>;
 }
