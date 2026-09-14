@@ -50,8 +50,8 @@ export function MineralJourney() {
     stone.current.position.z=ring*.12;
     const material=stone.current.material as THREE.MeshPhysicalMaterial;
     material.userData.raw.value=sample([1,1,.86,.45,0,0],phase);
-    material.bumpScale=sample([.025,.025,.018,.009,.0018,.0018],phase);
-    material.clearcoat=sample([0,0,.01,.025,.08,.08],phase);
+    material.bumpScale=sample([.012,.012,.009,.004,.0008,.0008],phase);
+    material.clearcoat=sample([.0001,.0001,.01,.06,.20,.20],phase);
     setting.current.visible=ring>.002;
     setting.current.scale.setScalar(Math.max(.001,ring));
     // Scroll time: fast initial release, gentle drift, then gravity and clearance.

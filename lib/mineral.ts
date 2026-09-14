@@ -15,10 +15,17 @@ export function noise(x: number, y: number, z: number): number {
 /** The same surface coordinates locate the raw shell and each removed chip. */
 export function rawSurface(x: number, y: number, z: number) {
   const n = (f: number) => noise(x * f + 5.2, y * f + 3.1, z * f + 7.8) - .5;
-  const relief = 1 + n(3) * .25 + n(8) * .13 + Math.abs(n(17)) * .085 - Math.abs(n(39)) * .035;
-  const clipping = Math.max(1, (x * .63 + y * .72 + z * .12) / .94,
-    (-x * .5 + y * .76 + z * .2) / .93, (x * .25 - y * .91 + z * .33) / 1.02);
-  return new THREE.Vector3(x * (1 - y * .13), y * 1.27, z * .79).multiplyScalar(relief / clipping);
+  // Broad broken faces and a sloping shoulder, like the supplied rough chunks.
+  // Keep the fine grit in the material instead of inflating every surface bump.
+  const relief = 1 + n(3) * .16 + n(9) * .075 - Math.abs(n(24)) * .055 + n(47) * .022;
+  const point = new THREE.Vector3(x * 1.04 * (1 - y * .17), y * 1.20, z * .78);
+  const clipping = Math.max(1,
+    (point.x * .35 + point.y * .90 + point.z * .25) / .91,
+    (-point.x * .25 - point.y * .90 + point.z * .30) / .94,
+    (point.x + point.y * .16 + point.z * .45) / .95,
+    (-point.x + point.y * .10 + point.z * .20) / .94,
+    (point.x * .20 + point.y * .24 + point.z) / .74);
+  return point.multiplyScalar(relief / clipping);
 }
 
 /** A shared lattice preserves the mineral pattern through three different
@@ -46,7 +53,8 @@ export function makeMineralGeometry() {
     const lap = Math.max(1, (px * .62 + py * .33 + pz * .76) / .78,
       (-px * .48 + py * .44 + pz * .70) / .80);
     refined.setXYZ(i, px / lap * shoulder, py / lap * shoulder, pz / lap * shoulder);
-    polished.setXYZ(i, x * .81 * (1 - y * .08), y * 1.22, z * .55);
+    // A rounded oval face with a shallow back, rather than a pointed egg.
+    polished.setXYZ(i, x * .86 * (1 - y * .025), y * 1.18, z > 0 ? z * .47 : z * .13);
   }
   geometry.computeVertexNormals();
   geometry.morphAttributes.position = [carved, refined, polished];
@@ -98,10 +106,12 @@ const mineralField = /* glsl */`
 
 export function makeMineralMaterial(raw: boolean) {
   const material = new THREE.MeshPhysicalMaterial({
-    map: mineralTexture("firoza-albedo.png", true), bumpMap: mineralTexture("firoza-albedo.png"),
-    bumpScale: raw ? .025 : .002, roughness: raw ? .85 : .3,
-    metalness: 0, clearcoat: .04, clearcoatRoughness: .35,
-    transmission: 0, envMapIntensity: .35,
+    map: mineralTexture("firoza-reference-albedo.png", true), bumpMap: mineralTexture("firoza-reference-albedo.png"),
+    bumpScale: raw ? .012 : .0008, roughness: raw ? .9 : .24,
+    // Keep this shader feature enabled during warmup; crossing zero later
+    // would compile a new program during the first polishing transition.
+    metalness: 0, clearcoat: .0001, clearcoatRoughness: .22,
+    transmission: 0, envMapIntensity: .65,
   });
   const rawUniform = { value: raw ? 1 : 0 };
   material.userData.raw = rawUniform;
@@ -110,28 +120,36 @@ export function makeMineralMaterial(raw: boolean) {
     shader.fragmentShader = mineralField + shader.fragmentShader;
     shader.fragmentShader = shader.fragmentShader.replace("#include <map_fragment>", `
       #include <map_fragment>
-      vec2 mineralUv = vMapUv * vec2(1.,.68);
-      float mineralBlue = smoothstep(.015, .15, diffuseColor.b - diffuseColor.r);
-      vec2 warped = mineralUv * 43. + vec2(mineralFbm(mineralUv*15.), mineralFbm(mineralUv*17.+31.))*3.;
-      float grain = mineralFbm(mineralUv*220.);
-      float fineGrain = mineralNoise(mineralUv*850.);
-      float veins = 1.-smoothstep(.007,.029,abs(mineralFbm(warped)-.51));
-      float branches = (1.-smoothstep(.004,.017,abs(mineralFbm(warped*2.+11.)-.48))) * smoothstep(.46,.67,mineralFbm(warped*.63));
-      float matrix = clamp((1.-mineralBlue)*(.42+grain*.55)+veins*.68+branches*.43,0.,.96);
-      vec3 mineral = mix(vec3(.012,.20,.255),vec3(.024,.295,.34),grain);
-      // Retain the larger source pattern, but suppress its cloudy white areas.
-      mineral = mix(mineral, diffuseColor.rgb*vec3(.65,.88,.94), .22);
-      vec3 host = mix(vec3(.020,.024,.019),vec3(.12,.083,.040),mineralFbm(warped*.34));
-      diffuseColor.rgb = mix(mineral,host,matrix) * (.91+fineGrain*.14);
-      float mineralRelief = (grain*.7+fineGrain*.3-matrix*.18)*mix(.001,.018,uRaw);
+      vec2 mineralUv = vMapUv * vec2(1.,.72);
+      vec3 sourceMineral = diffuseColor.rgb;
+      float mineralBlue = smoothstep(.025,.16,sourceMineral.b-sourceMineral.r)
+        * smoothstep(.02,.10,sourceMineral.g-sourceMineral.r);
+      float host = 1.-mineralBlue;
+      float grain = mineralFbm(mineralUv*190.);
+      float fineGrain = mineralNoise(mineralUv*760.);
+      // The photographs show reflective inclusion ISLANDS, not metallic veins
+      // everywhere. Only bright neutral/brassy pixels of the reference map
+      // receive a metallic response; turquoise always remains dielectric.
+      float inclusions = host * smoothstep(.065,.27,dot(sourceMineral,vec3(.3,.5,.2)));
+      float crustField = mineralFbm(mineralUv*16.+vec2(8.,3.));
+      float crust = max(host*.88, smoothstep(.47,.55,crustField)) * uRaw;
+      vec3 rock = mix(vec3(.040,.045,.044),vec3(.155,.148,.13),grain);
+      rock *= .68 + fineGrain*.55;
+      vec3 polishedColor = sourceMineral * mix(vec3(.88,.90,.95),vec3(1.),host);
+      vec3 exposedBlue = polishedColor * vec3(.77,.86,.81);
+      diffuseColor.rgb = mix(mix(polishedColor,exposedBlue,uRaw*.55),rock,crust);
+      float mineralRelief = uRaw * (grain*.015+fineGrain*.007+crust*.018);
     `).replace("#include <roughnessmap_fragment>", `
       #include <roughnessmap_fragment>
-      roughnessFactor = mix(.29+matrix*.13, .79+matrix*.13, uRaw);
+      roughnessFactor = mix(mix(.24,.35,host),mix(.73,.94,crust),uRaw);
+    `).replace("#include <metalnessmap_fragment>", `
+      #include <metalnessmap_fragment>
+      metalnessFactor = inclusions * mix(.78,.06,uRaw) * (1.-crust);
     `).replace("#include <normal_fragment_maps>", `
       #include <normal_fragment_maps>
       normal = perturbNormalArb(-vViewPosition, normal, vec2(dFdx(mineralRelief),dFdy(mineralRelief)), faceDirection);
     `);
   };
-  material.customProgramCacheKey = () => "hk-firoza-mineral-grain-v5";
+  material.customProgramCacheKey = () => "hk-firoza-photo-reference-v6";
   return material;
 }

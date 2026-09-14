@@ -6,8 +6,8 @@ class BezelCurve extends THREE.Curve<THREE.Vector3> {
   constructor(private radius: number, private depth: number) { super(); }
   getPoint(t: number, target = new THREE.Vector3()) {
     const angle = t * Math.PI * 2, y = Math.sin(angle);
-    return target.set(Math.cos(angle) * .81 * .76 * (1 - y * .08) * this.radius,
-      y * 1.22 * .76 * this.radius, this.depth);
+    return target.set(Math.cos(angle) * .86 * .76 * (1 - y * .025) * this.radius,
+      y * 1.18 * .76 * this.radius, this.depth);
   }
 }
 /** A silver cabochon setting: continuous bezel, rolled rims and split shoulders. */

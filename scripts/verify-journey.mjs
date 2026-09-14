@@ -27,7 +27,7 @@ const state=()=>page.evaluate(()=>({
  overflow:document.documentElement.scrollWidth>innerWidth,
  copy:[...document.querySelectorAll('.scene-copy-frame')].filter(x=>getComputedStyle(x).visibility==='visible').map(x=>({id:x.dataset.scene,opacity:Number(getComputedStyle(x).opacity)})),
  scrollY,viewport:`${innerWidth}x${innerHeight}`,
- fontSize:getComputedStyle(document.querySelector('.scene-support')).fontSize,
+ fontSize:document.querySelector('.scene-support') ? getComputedStyle(document.querySelector('.scene-support')).fontSize : null,
 }));
 const settle=async id=>{
  await page.evaluate(id=>scrollTo(0,document.getElementById(id).getBoundingClientRect().top+scrollY),id);
