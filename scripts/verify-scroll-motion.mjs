@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 const {chromium}=createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || 'playwright');
-const output=path.resolve('artifacts/new-journey');
+const output=path.resolve(process.env.OUTPUT_DIR || 'artifacts/refinement');
 await fs.mkdir(output,{recursive:true});
 const browser=await chromium.launch({executablePath:process.env.CHROME_PATH || '/opt/google/chrome/chrome',headless:process.env.BROWSER_HEADED !== '1',args:['--no-sandbox','--enable-unsafe-swiftshader']});
 const context=await browser.newContext({viewport:{width:1000,height:596},deviceScaleFactor:1,recordVideo:{dir:'/tmp/hk-scroll-video',size:{width:1000,height:596}}});
@@ -18,7 +18,7 @@ const sampleStart=()=>page.evaluate(()=>{
   window.__hkWheel={samples:[],running:true};
   const tick=time=>{
     window.__hkWheel.samples.push({time,y:scrollY,
-      copy:[...document.querySelectorAll('.scene-copy-frame')].filter(x=>getComputedStyle(x).visibility==='visible').map(x=>x.closest('section').id)});
+      copy:[...document.querySelectorAll('.scene-copy-frame')].filter(x=>getComputedStyle(x).visibility==='visible').map(x=>x.dataset.scene)});
     if(window.__hkWheel.running)requestAnimationFrame(tick);
   };requestAnimationFrame(tick);
 });

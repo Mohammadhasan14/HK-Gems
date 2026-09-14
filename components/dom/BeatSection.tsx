@@ -4,7 +4,7 @@ import { SCENES } from "@/lib/journey";
 import { copyOpacity } from "@/lib/sceneTimeline";
 import { useScroll } from "@/store/useScroll";
 export function BeatSection({ index, children }: { index: number; children: ReactNode }) {
-  const ref = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLElement>(null);
   useEffect(() => {
     const sync = () => {
       if (!ref.current) return;
@@ -17,8 +17,8 @@ export function BeatSection({ index, children }: { index: number; children: Reac
     };
     sync(); return useScroll.subscribe(sync);
   }, [index]);
-  return <section id={SCENES[index].id} className="journey-section" aria-labelledby={`${SCENES[index].id}-title`}>
-    <div ref={ref} className={`scene-copy-frame ${index === 0 ? "hero-copy" : ""}`}
-      style={{ visibility: index === 0 ? "visible" : "hidden" }}>{children}</div>
-  </section>;
+  return <section ref={ref} data-scene={SCENES[index].id}
+    className={`scene-copy-frame ${index === 0 ? "hero-copy" : ""}`}
+    aria-labelledby={`${SCENES[index].id}-title`}
+    style={{ visibility: index === 0 ? "visible" : "hidden" }}>{children}</section>;
 }

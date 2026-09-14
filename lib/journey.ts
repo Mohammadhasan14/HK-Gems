@@ -24,7 +24,9 @@ export const CHAPTERS = [
   { label: "The Earth", anchor: "earth", scene: 0 },
   { label: "Discovery", anchor: "discovery", scene: 1 },
   { label: "Shedding", anchor: "shedding", scene: 2 },
-  { label: "A Masterpiece", anchor: "masterpiece", scene: 4 },
+  { label: "Refinement", anchor: "refinement", scene: 3 },
+  { label: "Masterpiece", anchor: "masterpiece", scene: 4 },
+  { label: "Meaning", anchor: "meaning", scene: 5 },
 ] as const;
 // The reference shows these links, but no additional marketing sections.
 export const LINKS = [
