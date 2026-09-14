@@ -31,7 +31,7 @@ function ShaderWarmup() {
 }
 export function CanvasRoot() {
   return <div className="journey-canvas" aria-hidden="true">
-    <Canvas shadows={{ type: THREE.PCFSoftShadowMap }} frameloop="demand"
+    <Canvas shadows={{ type: THREE.PCFShadowMap }} frameloop="demand"
       gl={{ antialias: true, alpha: false, powerPreference: "high-performance" }} dpr={[1, 1.5]}
       camera={{ fov: 35, near: .1, far: 60, position: [0, 1.1, 10] }}>
       <ScrollFrames /><color attach="background" args={["#030302"]} />
