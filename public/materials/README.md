@@ -14,6 +14,12 @@ screenshot is not part of the runtime assets.
 The earlier procedural color/height maps and their unused baking script were
 removed when these textures replaced them.
 
+The refinement pass keeps these source files and layers procedural grain,
+warped fine veins and nonmetallic matrix variation in `lib/mineral.ts`. The
+additional field uses stable UV coordinates through shaping and polishing;
+fragment UVs sample the source near each chip's original surface position.
+No new photographic references or scanned PBR maps were supplied for that pass.
+
 ## Firoza prompt
 
 Use case: photorealistic-natural. Asset type: a seamless tileable PBR albedo texture for a real-time 3D natural turquoise / firoza gemstone. Generate a square flat orthographic macro surface texture filling the entire image edge to edge, no object silhouette, no background, no perspective, no text. It must look like a real polished slab of natural blue turquoise with irregular brown ochre and dark grey host-rock matrix, occasional small silver-grey quartz inclusions. About 75% saturated deep blue to blue-green turquoise with broad uneven mineral patches and subtle cloudy microtexture; about 25% organic broken branching thin veins and small uneven crust islands in dark brown, ochre and muted silver-grey. Dense realistic fine mineral detail. The matrix is irregular and discontinuous, not metallic outlines, not a uniform polygonal web, not gold decorative kintsugi. Flat cross-polarized diffuse illumination with no specular highlights, no cast shadows, no gradient, no depth lighting baked in, suitable as a tileable material base-color map. Photographic mineral realism, not an illustration, not a gemstone product photograph. Rich blue mineral dominates; avoid pale cyan, pale white matrix dominating, thin perfect cells, large gold outlines, diamonds, facets, terrain or jewelry.
