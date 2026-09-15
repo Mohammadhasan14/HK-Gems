@@ -1,11 +1,10 @@
 "use client";
-import { useEffect, useMemo, useRef } from "react";
-import { useFrame, useThree } from "@react-three/fiber";
+import { useEffect, useMemo } from "react";
+import { useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 import { noise, mineralTexture } from "@/lib/mineral";
-import { useScroll } from "@/store/useScroll";
-import { smooth, stagePlacement } from "@/lib/sceneTimeline";
+import { stagePlacement } from "@/lib/sceneTimeline";
 
 function terrainHeight(x: number, z: number) {
   const strata = 1 - Math.abs(noise(x * .64 + z * .37 + 10, z * .82, 4) * 2 - 1);
@@ -64,7 +63,7 @@ function shadeTerrain(shader: THREE.WebGLProgramParametersWithUniforms) {
     float depthFade = smoothstep(-2., 1.4, vGroundPosition.z);
     float pool = .10 + .90 * exp(-dot((vGroundPosition.xz - vec2(1.6, .5)) * vec2(.42, .13),
       (vGroundPosition.xz - vec2(1.6, .5)) * vec2(.42, .13)));
-    float crevice = mix(.18, 1., smoothstep(.008, .075, rockColor.r));
+    float crevice = mix(.42, 1., smoothstep(.008, .075, rockColor.r));
     outgoingLight *= depthFade * pool * crevice * .8 * (1. - smoothstep(2.5, 7., vGroundPosition.z)*.65);
     // Fading color alone leaves an opaque black silhouette across the shaft.
     // Let distant terrain dissolve into the atmosphere as well.
@@ -87,13 +86,15 @@ const shaftFragment = /* glsl */`
  }
 `;
 export function RockyEnvironment() {
-  const group = useRef<THREE.Group>(null), pedestal = useRef<THREE.Mesh>(null), spotlight = useRef<THREE.SpotLight>(null), rocks = useRef<THREE.InstancedMesh>(null);
   const { size } = useThree();
+  // The ground is a fixed reference for the moving mineral. Responsive staging
+  // may reposition the whole environment on resize, never during a scroll.
+  const { mobile, centerY, scale } = stagePlacement(size.width, size.height);
   const assets = useMemo(() => {
     const target = new THREE.Object3D(); target.position.set(1.6, -2, 0);
     const rock = makeRockGeometry();
     const albedo = mineralTexture("rock-albedo.png", true), height = mineralTexture("rock-albedo.png");
-    const material = new THREE.MeshStandardMaterial({ color: "#777b73", map: albedo, roughness: .92, bumpMap: height, bumpScale: .24 });
+    const material = new THREE.MeshStandardMaterial({ color: "#777b73", map: albedo, roughness: .92, bumpMap: height, bumpScale: .065 });
     material.onBeforeCompile = shadeTerrain;
     material.customProgramCacheKey = () => "rock-distance-fade";
     const rocks = new THREE.InstancedMesh(rock, material, 210), transform = new THREE.Object3D();
@@ -122,27 +123,14 @@ export function RockyEnvironment() {
   useEffect(() => () => {
     assets.terrain.dispose(); assets.dust.dispose(); assets.rock.dispose(); assets.material.dispose();
   }, [assets]);
-  useFrame(() => {
-    if (!group.current || !pedestal.current) return;
-    const { scene } = useScroll.getState(), { mobile, centerY, scale } = stagePlacement(size.width, size.height, scene);
-    group.current.position.set(mobile ? -1.55 : 0, mobile ? centerY + 2.1 - scale * 1.6 : 0, 0);
-    const raised = smooth(4, 5, scene);
-    if(rocks.current){
-      rocks.current.position.x = -.55*smooth(0,1,scene)+.95*smooth(1,3,scene)-.65*smooth(3,5,scene);
-      rocks.current.rotation.y = smooth(1,4,scene)*.055;
-    }
-    pedestal.current.position.set(1.55, -2.24 + raised * .46, .12);
-    pedestal.current.rotation.y = .12 + smooth(2,5,scene)*.35;
-    pedestal.current.scale.set(1.45 + raised * .3, .30 + raised * .23, 1.03 + raised * .16);
-    if(spotlight.current) spotlight.current.intensity=170+smooth(2,4,scene)*30-raised*35;
-  });
-  return <group ref={group} name="rocky-environment">
-    <mesh geometry={assets.terrain} position={[0, -2.4, 0]} receiveShadow>
-      <meshStandardMaterial transparent vertexColors map={assets.albedo} roughness={.83} bumpMap={assets.height} bumpScale={.28}
+  return <group name="rocky-environment" position={[mobile ? -1.55 : 0, mobile ? centerY + 2.1 - scale * 1.6 : 0, 0]}>
+    <mesh name="ground-terrain" geometry={assets.terrain} position={[0, -2.4, 0]} receiveShadow>
+      <meshStandardMaterial transparent vertexColors map={assets.albedo} roughness={.9} bumpMap={assets.height} bumpScale={.075}
         onBeforeCompile={shadeTerrain} customProgramCacheKey={() => "rock-distance-fade"} />
     </mesh>
-    <primitive ref={rocks} object={assets.rocks} />
-    <mesh ref={pedestal} geometry={assets.rock} material={assets.material} castShadow receiveShadow />
+    <primitive name="ground-rocks" object={assets.rocks} />
+    <mesh name="ground-pedestal" geometry={assets.rock} material={assets.material}
+      position={[1.55, -2.24, .12]} rotation={[0, .12, 0]} scale={[1.45, .3, 1.03]} castShadow receiveShadow />
     <mesh position={[.4, 5.5, -5]}>
       <planeGeometry args={[11, 24]} />
       <shaderMaterial transparent depthWrite={false} blending={THREE.AdditiveBlending}
@@ -154,8 +142,12 @@ export function RockyEnvironment() {
         fragmentShader="varying vec3 vColor;void main(){float d=length(gl_PointCoord-.5);gl_FragColor=vec4(vColor,(1.-smoothstep(.06,.5,d))*.65);}" />
     </points>
     <primitive object={assets.target} />
-    <spotLight ref={spotlight} position={[.6, 6, 1]} target={assets.target} color="#f4dfba" intensity={170} angle={.43} penumbra={1}
-      castShadow shadow-mapSize={[1024,1024]} shadow-bias={-.0002} shadow-normalBias={.02} shadow-radius={4} />
+    {/* One fixed source casts the live mineral silhouette onto the real terrain.
+        Tight depth bounds and modest normal bias reduce acne without detaching
+        the shadow; a filtered edge preserves detail instead of a black cutout. */}
+    <spotLight name="ground-key-light" position={[.6, 6, 1]} target={assets.target} color="#f4dfba" intensity={170} angle={.43} penumbra={1}
+      castShadow shadow-mapSize={[2048,2048]} shadow-camera-near={.5} shadow-camera-far={16}
+      shadow-bias={-.0001} shadow-normalBias={.025} shadow-radius={3} shadow-intensity={.8} />
     <spotLight position={[1.5, .1, -2.4]} target={assets.target} color="#e5d5b8" intensity={65} angle={.95} penumbra={1} />
   </group>;
 }
