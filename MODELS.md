@@ -43,11 +43,19 @@ bezel following the revised oval outline, with rolled rims, split shoulders,
 and a continuous band. Its three-quarter
 presentation exposes the ring opening and reduces the oversized-stone effect.
 
-The environment has displaced terrain, 210 instanced slabs, a raised irregular
-pedestal, two warm spots, soft filtered shadow reception, a haze shaft, and 160
-small dust points. Rock framing and light strengths change continuously with
-scene phase. Foreground contrast is reduced and distant ground fades in alpha
-as well as color, eliminating the dark horizon silhouette across the haze.
+The environment has displaced terrain, 210 instanced slabs, an irregular
+pedestal, two warm spots, filtered shadow reception, a haze shaft, and 160
+small dust points. Terrain, slabs, pedestal and light directions stay anchored
+through every scroll phase; only a viewport resize can reposition the ground
+for the mobile composition. The pedestal does not rotate, rise or grow during
+the ring reveal. Mineral light strengths still change with its finish.
+
+One fixed overhead spot casts the live gemstone and fragment silhouettes onto
+the actual ground geometry. Its 2048px PCF map uses bounded near/far planes,
+modest depth/normal bias and 80% shadow intensity. Lower ground bump strength
+and gentler texture-based crevice darkening preserve relief without crushed,
+noisy shading. Distant ground fades in alpha as well as color, eliminating
+the dark horizon silhouette across the haze.
 
 ## Layout and scrolling
 

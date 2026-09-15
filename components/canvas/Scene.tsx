@@ -14,7 +14,8 @@ function MineralLights() {
     const phase=useScroll.getState().scene;
     if(key.current) key.current.intensity=1.35+smooth(2,4,phase)*.55;
     if(fill.current) fill.current.intensity=.15+smooth(4,5,phase)*1.5;
-    if(edge.current){edge.current.intensity=1.4-smooth(3,5,phase)*.5;edge.current.position.x=2-smooth(0,1,phase)*3+smooth(1,3,phase)*2;}
+    // Keep light directions fixed so the terrain shading cannot sweep sideways.
+    if(edge.current) edge.current.intensity=1.4-smooth(3,5,phase)*.5;
   });
   return <><ambientLight intensity={.23}/>
     <directionalLight ref={key} position={[-3,4,5]} color="#e3eeec" intensity={1.35}/>
