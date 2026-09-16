@@ -12,9 +12,12 @@ import sharp from 'sharp';
 const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const output = path.resolve(process.env.OUTPUT_DIR || '.tmp-verify/ground');
 await fs.mkdir(output, { recursive: true });
+const headed = process.env.BROWSER_HEADED === '1';
 const browser = await chromium.launch({
   executablePath: process.env.CHROME_PATH || '/opt/google/chrome/chrome',
-  headless: true, args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--use-angle=swiftshader', '--disable-dev-shm-usage'],
+  headless: !headed,
+  args: ['--no-sandbox', '--enable-unsafe-swiftshader', '--disable-dev-shm-usage',
+    ...(headed ? [] : ['--use-angle=swiftshader'])],
 });
 const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 1 });
 const errors = [], results = [];
@@ -41,7 +44,18 @@ await page.addInitScript(() => {
 const settle = async position => {
   await page.evaluate(p => scrollTo(0, p * document.getElementById('earth').offsetHeight), position);
   await page.waitForFunction(p => Math.abs(scrollY - p * document.getElementById('earth').offsetHeight) < 2, position);
-  await page.waitForTimeout(180);
+  // Native scroll can settle before the demand-rendered canvas catches up,
+  // especially under software WebGL. Wait for the actual rendered phase.
+  await page.waitForFunction(p => {
+    const phase = window.__groundRenderer()?.scene.getObjectByName('firoza-journey')?.userData.phase;
+    const last = document.querySelectorAll('.journey-section').length - 1;
+    const clamped = Math.max(0, Math.min(last, p));
+    const index = Math.floor(clamped);
+    const t = Math.max(0, Math.min(1, (clamped - index - .28) / .72));
+    const expected = matchMedia('(prefers-reduced-motion: reduce)').matches
+      ? Math.min(last, Math.floor(clamped + .2)) : index + t * t * (3 - 2 * t);
+    return typeof phase === 'number' && Math.abs(phase - expected) < .01;
+  }, position, { timeout: 30000 });
 };
 const state = () => page.evaluate(() => {
   const { scene, camera } = window.__groundRenderer();
